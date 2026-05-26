@@ -43,7 +43,7 @@ class BudgetResponse(BudgetBase):
                     "Utilities": 400.00
                 },
                 "ml_recommended": {
-                    "was_recommended": true,
+                    "was_recommended": True,
                     "recommended_savings_rate": 0.20
                 },
                 "created_at": "2026-05-01T00:00:00Z"
