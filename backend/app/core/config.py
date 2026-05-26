@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "SuperSecretRandom32ByteHashOrGenerateUsingOpenssl"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     ENVIRONMENT: str = "development"
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://personal-expense-tracker-frontend.vercel.app"
+    ]
 
     class Config:
         env_file = ".env"

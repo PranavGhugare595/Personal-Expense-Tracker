@@ -13,15 +13,9 @@ app = FastAPI(
 )
 
 # CORS configuration
-origins = [
-    "http://localhost:5173", # Vite React standard development port
-    "http://localhost:3000",
-    "https://personal-expense-tracker-frontend.vercel.app" # Production frontend URL placeholder
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
