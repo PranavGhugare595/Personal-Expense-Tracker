@@ -715,7 +715,7 @@ function App() {
                     <Form.Item name="amount" label={<span style={{ color: 'var(--text-primary)' }}>Amount Paid (₹)</span>} rules={[{ required: true }]}>
                       <Input type="number" step="0.01" placeholder="14.50" className="glass-input" />
                     </Form.Item>
-                    <Form.Item name="category" label={<span style={{ color: 'var(--text-primary)' }}>Resolved Category</span>} rules={[{ required: true }]}>
+                    <Form.Item name="category" label={<span style={{ color: 'var(--text-primary)' }}>Category</span>} rules={[{ required: true }]}>
                       <Input placeholder="Click auto-suggest or type custom category" className="glass-input" />
                     </Form.Item>
                     <Form.Item name="payment_method" label={<span style={{ color: 'var(--text-primary)' }}>Payment Route</span>}>
