@@ -786,6 +786,18 @@
                                                         }
                                                     />
                                                 </Form.Item>
+                                                <Form.Item name="payment_method" label={<span style={{ color: '#fff' }}>Payment Route</span>}>
+                                                    <Select 
+                                                        className="glass-select" 
+                                                        placeholder="Select payment route"
+                                                        options={[
+                                                            { value: 'Cash', label: 'Cash' },
+                                                            { value: 'Online Payment', label: 'Online Payment' },
+                                                            { value: 'Credit Card', label: 'Credit Card' },
+                                                            { value: 'Debit Card', label: 'Debit Card' }
+                                                        ]}
+                                                    />
+                                                </Form.Item>
                                                 <Button type="primary" htmlType="submit" className="btn-premium-neon" block loading={loading}>
                                                     Log Transaction
                                                 </Button>

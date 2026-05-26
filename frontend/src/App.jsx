@@ -747,7 +747,16 @@ function App() {
                       />
                     </Form.Item>
                     <Form.Item name="payment_method" label={<span style={{ color: 'var(--text-primary)' }}>Payment Route</span>}>
-                      <Input placeholder="Credit Card, Cash, etc." className="glass-input" />
+                      <Select 
+                        className="glass-select" 
+                        placeholder="Select payment route"
+                        options={[
+                          { value: 'Cash', label: 'Cash' },
+                          { value: 'Online Payment', label: 'Online Payment' },
+                          { value: 'Credit Card', label: 'Credit Card' },
+                          { value: 'Debit Card', label: 'Debit Card' }
+                        ]}
+                      />
                     </Form.Item>
                     
                     <Button type="primary" htmlType="submit" className="btn-premium-neon" block loading={loading}>
