@@ -278,6 +278,9 @@
                     if (res.ok) {
                         const data = await res.json();
                         setUser(data);
+                    } else if (res.status === 401 || res.status === 403) {
+                        handleLogout();
+                        message.error("Session expired. Please sign in again.");
                     }
                 } catch (e) { console.error(e); }
             };
@@ -292,6 +295,8 @@
                     if (res.ok) {
                         const data = await res.json();
                         setExpenses(data);
+                    } else if (res.status === 401 || res.status === 403) {
+                        handleLogout();
                     }
                 } catch (e) { console.error(e); }
                 finally { setLoading(false); }
@@ -306,6 +311,8 @@
                     if (res.ok) {
                         const data = await res.json();
                         setActiveBudget(data);
+                    } else if (res.status === 401 || res.status === 403) {
+                        handleLogout();
                     }
                 } catch (e) { console.error(e); }
             };

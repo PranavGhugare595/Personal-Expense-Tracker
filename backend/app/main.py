@@ -48,6 +48,26 @@ app.add_middleware(
 # Register API v1 endpoints router
 app.include_router(api_router, prefix="/api/v1")
 
+@app.on_event("startup")
+def startup_event():
+    try:
+        from app.core.database import db_manager
+        users = db_manager.find_many("users", {})
+        if not users:
+            print("[INFO] Database empty on startup! Automatic seeding triggered...")
+            import sys
+            backend_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(backend_dir)
+            if parent_dir not in sys.path:
+                sys.path.append(parent_dir)
+            from seed_db import seed_data
+            seed_data()
+            print("[INFO] Database automatic seeding complete.")
+        else:
+            print(f"[INFO] Database contains {len(users)} users. Skipping auto-seeding.")
+    except Exception as e:
+        print(f"[WARNING] Database auto-seeding on startup failed: {e}")
+
 @app.get("/", tags=["General"])
 def read_root():
     return {
@@ -58,6 +78,7 @@ def read_root():
     }
 
 @app.get("/health", tags=["General"])
+
 def health_check():
     return {
         "status": "healthy",
