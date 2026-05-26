@@ -517,7 +517,6 @@ function App() {
         >
           <Menu.Item key="dashboard" icon={<LineChartOutlined />}>Dashboard</Menu.Item>
           <Menu.Item key="log" icon={<FormOutlined />}>Log Expense</Menu.Item>
-          <Menu.Item key="budgets" icon={<PieChartOutlined />}>Active Limits</Menu.Item>
           <Menu.Item key="insights" icon={<SecurityScanOutlined />}>AI Predictor Room</Menu.Item>
         </Menu>
         <div style={{ position: 'absolute', bottom: 20, width: '100%', padding: '0 20px', textAlign: 'center' }}>
@@ -802,52 +801,7 @@ function App() {
             </Row>
           )}
 
-          {/* TAB 3: BUDGET PANELS */}
-          {currentTab === 'budgets' && (
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Active Target Budget Bounds</span>} bordered={false}>
-                <Row gutter={[20, 20]}>
-                  <Col xs={24} md={8}>
-                    <Statistic title={<span style={{ color: 'var(--text-secondary)' }}>Combined Monthly Limit</span>} value={activeBudget?.total_limit || 2000.0} prefix="₹" valueStyle={{ color: 'var(--text-primary)' }} />
-                  </Col>
-                  <Col xs={24} md={16}>
-                    <Paragraph style={{ color: 'var(--text-secondary)' }}>
-                      Adjust your spending guardrails to maintain high compliance scores. The AI Predictor Room will recommend boundaries based on your transaction ratios.
-                    </Paragraph>
-                  </Col>
-                </Row>
-              </Card>
 
-              <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Category Limits Monitoring</span>} bordered={false}>
-                {activeBudget?.category_limits ? (
-                  <Row gutter={[20, 20]}>
-                    {Object.entries(activeBudget.category_limits).map(([cat, limit]) => {
-                      const spent = expenses.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
-                      const percent = Math.round((spent / limit) * 100);
-                      return (
-                        <Col xs={24} md={8} key={cat}>
-                          <div style={{ background: 'rgba(255,255,255,0.01)', padding: 20, borderRadius: 15, border: '1px solid var(--glass-border)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                              <Text strong style={{ color: 'var(--text-primary)' }}>{cat}</Text>
-                              <Text style={{ color: percent > 90 ? '#ef4444' : 'var(--text-secondary)' }}>₹{spent.toFixed(0)} / ₹{limit.toFixed(0)}</Text>
-                            </div>
-                            <Progress 
-                              percent={Math.min(100, percent)} 
-                              status={percent > 100 ? "exception" : "normal"}
-                              strokeColor={percent > 90 ? '#ef4444' : '#6366f1'} 
-                              trailColor="rgba(255,255,255,0.03)"
-                            />
-                          </div>
-                        </Col>
-                      );
-                    })}
-                  </Row>
-                ) : (
-                  <Empty />
-                )}
-              </Card>
-            </Space>
-          )}
 
           {/* TAB 4: AI Predictor Lounge */}
           {currentTab === 'insights' && (
