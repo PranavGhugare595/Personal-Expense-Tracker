@@ -14,3 +14,4 @@ scikit-learn
 statsmodels
 joblib
 python-dotenv>=1.0.1
+email-validator
