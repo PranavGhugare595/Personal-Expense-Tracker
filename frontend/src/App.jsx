@@ -428,7 +428,7 @@ function App() {
 
   // Define table schema inside Expense View
   const expenseColumns = [
-    { title: 'Description', dataIndex: 'description', key: 'description', render: (t) => <Text style={{ color: '#fff', fontWeight: 500 }}>{t}</Text> },
+    { title: 'Description', dataIndex: 'description', key: 'description', render: (t) => <Text style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{t}</Text> },
     { title: 'Category', dataIndex: 'category', key: 'category', render: (cat) => <Tag color="purple">{cat}</Tag> },
     { 
       title: 'Amount', 
@@ -458,15 +458,15 @@ function App() {
 
   return (
     <Layout style={{ minHeight: '100vh', background: 'transparent' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(v) => setCollapsed(v)} style={{ background: 'rgba(11, 15, 25, 0.9)', borderRight: '1px solid var(--glass-border)' }}>
+      <Sider collapsible collapsed={collapsed} onCollapse={(v) => setCollapsed(v)} style={{ background: 'rgba(255, 255, 255, 0.85)', borderRight: '1px solid var(--glass-border)' }}>
         <div style={{ height: 60, margin: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ background: 'var(--primary-gradient)', padding: 6, borderRadius: 10 }}>
             <RocketOutlined style={{ fontSize: 18, color: '#fff' }} />
           </div>
-          {!collapsed && <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 16, background: 'var(--primary-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI Expense Tracker</span>}
+          {!collapsed && <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: 16, background: 'var(--primary-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>AI Expense Tracker</span>}
         </div>
         <Menu 
-          theme="dark" 
+          theme="light" 
           mode="inline" 
           selectedKeys={[currentTab]} 
           style={{ background: 'transparent' }}
@@ -486,7 +486,7 @@ function App() {
 
       <Layout style={{ background: 'transparent' }}>
         <Header style={{ background: 'transparent', padding: '0 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 70 }}>
-          <Title level={4} style={{ color: '#fff', margin: 0 }}>Active Portal: <span className="glow-title" style={{ textTransform: 'capitalize' }}>{currentTab}</span></Title>
+          <Title level={4} style={{ color: 'var(--text-primary)', margin: 0 }}>Active Portal: <span className="glow-title" style={{ textTransform: 'capitalize' }}>{currentTab}</span></Title>
           <Space>
             <Tag color="cyan"><UserOutlined /> {user?.name || "Premium User"}</Tag>
             {token === 'offline_sandbox_token' && <Tag color="orange">Offline Sandbox Mode</Tag>}
@@ -525,7 +525,7 @@ function App() {
                   <Card className="glass-panel" bordered={false}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Budget Allocation Limit</span>
-                      <span style={{ color: '#fff', fontWeight: 600 }}>{budgetRatio.toFixed(1)}% Used</span>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{budgetRatio.toFixed(1)}% Used</span>
                     </div>
                     <Progress 
                       percent={Math.min(100, Math.round(budgetRatio))} 
@@ -539,7 +539,7 @@ function App() {
 
               <Row gutter={[20, 20]}>
                 <Col xs={24} md={16}>
-                  <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Recent Expense Stream</span>} bordered={false}>
+                  <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Recent Expense Stream</span>} bordered={false}>
                     {expenses.length === 0 ? (
                       <Empty description={<span style={{ color: 'var(--text-secondary)' }}>No transactions registered. Add transactions in Log Expense.</span>} />
                     ) : (
@@ -555,7 +555,7 @@ function App() {
                   </Card>
                 </Col>
                 <Col xs={24} md={8}>
-                  <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Core Category Distribution</span>} bordered={false}>
+                  <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Core Category Distribution</span>} bordered={false}>
                     {expenses.length === 0 ? (
                       <Empty description="No aggregates" />
                     ) : (
@@ -583,7 +583,7 @@ function App() {
           {currentTab === 'log' && (
             <Row gutter={[20, 20]}>
               <Col xs={24} md={12}>
-                <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Submit New Expense (Auto-Categorized)</span>} bordered={false}>
+                <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Submit New Expense (Auto-Categorized)</span>} bordered={false}>
                   <Form form={expenseForm} layout="vertical" onFinish={handleAddExpense}>
                     <Form.Item name="description" label={<span style={{ color: 'var(--text-primary)' }}>Transaction Memo</span>} rules={[{ required: true }]}>
                       <Input 
@@ -610,7 +610,7 @@ function App() {
               </Col>
               
               <Col xs={24} md={12}>
-                <Card className="glass-panel" title={<span style={{ color: '#fff' }}>AI Auto-Classification Assist</span>} bordered={false}>
+                <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>AI Auto-Classification Assist</span>} bordered={false}>
                   {mlLoading ? (
                     <div style={{ textAlign: 'center', padding: '40px 0' }}>
                       <RocketOutlined spin style={{ fontSize: 36, color: '#a855f7', marginBottom: 15 }} />
@@ -648,10 +648,10 @@ function App() {
           {/* TAB 3: BUDGET PANELS */}
           {currentTab === 'budgets' && (
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Active Target Budget Bounds</span>} bordered={false}>
+              <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Active Target Budget Bounds</span>} bordered={false}>
                 <Row gutter={[20, 20]}>
                   <Col xs={24} md={8}>
-                    <Statistic title={<span style={{ color: 'var(--text-secondary)' }}>Combined Monthly Limit</span>} value={activeBudget?.total_limit || 2000.0} prefix="$" valueStyle={{ color: '#fff' }} />
+                    <Statistic title={<span style={{ color: 'var(--text-secondary)' }}>Combined Monthly Limit</span>} value={activeBudget?.total_limit || 2000.0} prefix="$" valueStyle={{ color: 'var(--text-primary)' }} />
                   </Col>
                   <Col xs={24} md={16}>
                     <Paragraph style={{ color: 'var(--text-secondary)' }}>
@@ -661,7 +661,7 @@ function App() {
                 </Row>
               </Card>
 
-              <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Category Limits Monitoring</span>} bordered={false}>
+              <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Category Limits Monitoring</span>} bordered={false}>
                 {activeBudget?.category_limits ? (
                   <Row gutter={[20, 20]}>
                     {Object.entries(activeBudget.category_limits).map(([cat, limit]) => {
@@ -671,7 +671,7 @@ function App() {
                         <Col xs={24} md={8} key={cat}>
                           <div style={{ background: 'rgba(255,255,255,0.01)', padding: 20, borderRadius: 15, border: '1px solid var(--glass-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                              <Text strong style={{ color: '#fff' }}>{cat}</Text>
+                              <Text strong style={{ color: 'var(--text-primary)' }}>{cat}</Text>
                               <Text style={{ color: percent > 90 ? '#ef4444' : 'var(--text-secondary)' }}>${spent.toFixed(0)} / ${limit.toFixed(0)}</Text>
                             </div>
                             <Progress 
@@ -697,7 +697,7 @@ function App() {
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Row gutter={[20, 20]}>
                 <Col xs={24} md={12}>
-                  <Card className="glass-panel" title={<span style={{ color: '#fff' }}><RocketOutlined /> Expense Projections (3-Month ML Forecast)</span>} bordered={false}>
+                  <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}><RocketOutlined /> Expense Projections (3-Month ML Forecast)</span>} bordered={false}>
                     {forecasts.length === 0 ? (
                       <Empty description="No forecasts" />
                     ) : (
@@ -711,7 +711,7 @@ function App() {
                         {forecasts.map((f, idx) => (
                           <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid var(--glass-border)' }}>
                             <div>
-                              <Text strong style={{ color: '#fff' }}>Month: {f.month}</Text>
+                              <Text strong style={{ color: 'var(--text-primary)' }}>Month: {f.month}</Text>
                               <br />
                               <Text type="secondary">Confidence Bounds: ${f.confidence_interval[0].toFixed(0)} - ${f.confidence_interval[1].toFixed(0)}</Text>
                             </div>
@@ -724,7 +724,7 @@ function App() {
                 </Col>
 
                 <Col xs={24} md={12}>
-                  <Card className="glass-panel" title={<span style={{ color: '#fff' }}><SecurityScanOutlined /> Spending Optimization Insights</span>} bordered={false}>
+                  <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}><SecurityScanOutlined /> Spending Optimization Insights</span>} bordered={false}>
                     {insights ? (
                       <Space direction="vertical" style={{ width: '100%' }} size="middle">
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(16,185,129,0.05)', padding: 15, borderRadius: 12, border: '1px solid rgba(16,185,129,0.1)' }}>
@@ -732,11 +732,11 @@ function App() {
                           <div>
                             <Text strong style={{ color: '#10b981' }}>Optimized Savings Allocation</Text>
                             <br />
-                            <Text style={{ color: 'var(--text-secondary)' }}>Suggested minimum target savings: <strong style={{ color: '#fff' }}>${insights.recommended_savings.toFixed(2)}</strong></Text>
+                            <Text style={{ color: 'var(--text-secondary)' }}>Suggested minimum target savings: <strong style={{ color: 'var(--text-primary)' }}>${insights.recommended_savings.toFixed(2)}</strong></Text>
                           </div>
                         </div>
 
-                        <Text strong style={{ color: '#fff', marginTop: 10, display: 'block' }}>Category allocations compared with standard ratios:</Text>
+                        <Text strong style={{ color: 'var(--text-primary)', marginTop: 10, display: 'block' }}>Category allocations compared with standard ratios:</Text>
                         
                         {Object.entries(insights.recommended_limits).map(([cat, recommendedLimit]) => {
                           const currentSpent = expenses.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
@@ -744,7 +744,7 @@ function App() {
                           return (
                             <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: 8 }}>
                               <div>
-                                <Text style={{ color: '#fff' }}>{cat}</Text>
+                                <Text style={{ color: 'var(--text-primary)' }}>{cat}</Text>
                                 <br />
                                 <Text type="secondary" style={{ fontSize: 12 }}>Spent: ${currentSpent.toFixed(0)} / Target Max: ${recommendedLimit.toFixed(0)}</Text>
                               </div>

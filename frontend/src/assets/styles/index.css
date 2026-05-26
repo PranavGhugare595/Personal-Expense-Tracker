@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
-/* Dynamic Neon-Glass Theme Variables */
+/* Dynamic Premium Light Theme Variables */
 :root {
-  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-  --dark-bg: #090d16;
-  --dark-card: rgba(17, 25, 40, 0.65);
-  --glass-card: rgba(255, 255, 255, 0.02);
-  --glass-border: rgba(255, 255, 255, 0.07);
-  --neon-border: rgba(99, 102, 241, 0.35);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --neon-glow: 0 0 25px rgba(99, 102, 241, 0.25);
+  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+  --dark-bg: #f8fafc; /* Beautiful clean slate-50 light background */
+  --dark-card: rgba(255, 255, 255, 0.85); /* premium white card with glassmorphism */
+  --glass-card: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(226, 232, 240, 0.8); /* soft slate border */
+  --neon-border: rgba(99, 102, 241, 0.25);
+  --text-primary: #0f172a; /* high contrast dark text */
+  --text-secondary: #64748b; /* medium slate text */
+  --neon-glow: 0 10px 30px -10px rgba(99, 102, 241, 0.15);
   --emerald-gradient: linear-gradient(135deg, #10b981, #059669);
   --rose-gradient: linear-gradient(135deg, #f43f5e, #e11d48);
 }
@@ -21,8 +21,8 @@ body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--dark-bg);
   background-image:
-    radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+    radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -36,7 +36,7 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.05);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -57,8 +57,8 @@ body {
 
 /* Beautiful Animated Form Input Elements */
 .glass-input {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(226, 232, 240, 1) !important;
   color: var(--text-primary) !important;
   border-radius: 10px !important;
   transition: all 0.3s ease !important;
@@ -66,9 +66,9 @@ body {
 
 .glass-input:focus,
 .glass-input:hover {
-  border-color: rgba(168, 85, 247, 0.6) !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.1) !important;
 }
 
 /* Glowing Neon Actions Buttons */
@@ -96,14 +96,68 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(0, 0, 0, 0.01);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(99, 102, 241, 0.15);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.4);
+  background: rgba(99, 102, 241, 0.35);
+}
+
+/* Ant Design overrides for light theme integration */
+.ant-layout {
+  background: transparent !important;
+}
+
+.ant-menu-light, .ant-menu {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border-inline-end: none !important;
+}
+
+.ant-menu-item-selected {
+  background: rgba(99, 102, 241, 0.06) !important;
+  color: #4f46e5 !important;
+}
+
+.ant-table {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(99, 102, 241, 0.03) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-table-row:hover > td {
+  background: rgba(99, 102, 241, 0.015) !important;
+}
+
+.ant-statistic-title {
+  color: var(--text-secondary) !important;
+}
+
+.ant-statistic-content {
+  color: var(--text-primary) !important;
+}
+
+.ant-card {
+  background: transparent !important;
+}
+
+.ant-layout-sider-trigger {
+  background: rgba(99, 102, 241, 0.05) !important;
+  color: var(--text-primary) !important;
+  border-top: 1px solid var(--glass-border) !important;
 }
