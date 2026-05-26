@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Modal, Progress, Tag, Statistic, Empty, message } from 'antd';
+import { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Modal, Progress, Tag, Statistic, Empty, message, Slider } from 'antd';
 import { 
   LineChartOutlined, 
   FormOutlined, 
@@ -30,6 +30,10 @@ function App() {
   const [activeBudget, setActiveBudget] = useState(null);
   const [forecasts, setForecasts] = useState([]);
   const [insights, setInsights] = useState(null);
+
+  // Custom Income & Safety Target States
+  const [userIncome, setUserIncome] = useState(parseFloat(localStorage.getItem('user_income')) || 4000.0);
+  const [safetyAllocation, setSafetyAllocation] = useState(parseFloat(localStorage.getItem('safety_allocation')) || 20.0);
   
   // Table Loading states
   const [loading, setLoading] = useState(false);
@@ -51,9 +55,19 @@ function App() {
       fetchUserProfile();
       fetchExpenses();
       fetchBudget();
-      fetchMLInsights();
     }
   }, [token]);
+
+  // Re-fetch/recalculate insights when config or token changes
+  useEffect(() => {
+    if (token) {
+      if (token === 'offline_sandbox_token') {
+        recalculateOfflineInsights(expenses, userIncome, safetyAllocation);
+      } else {
+        fetchMLInsights(userIncome, safetyAllocation);
+      }
+    }
+  }, [userIncome, safetyAllocation, token, expenses]);
 
   // Auth Functions
   const handleLogin = async (values) => {
@@ -168,7 +182,7 @@ function App() {
     }
   };
 
-  const fetchMLInsights = async () => {
+  const fetchMLInsights = async (customIncome = userIncome, customSafety = safetyAllocation) => {
     if (token === 'offline_sandbox_token') return;
     try {
       // 1. Fetch Forecasts
@@ -181,7 +195,7 @@ function App() {
       }
       
       // 2. Fetch Budget Recommendations
-      const iRes = await fetch(`${API_BASE_URL}/ml/insights`, {
+      const iRes = await fetch(`${API_BASE_URL}/ml/insights?income=${customIncome}&safety_allocation=${customSafety}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (iRes.ok) {
@@ -348,20 +362,32 @@ function App() {
     recalculateOfflineInsights(sandboxExpenses);
   };
 
-  const recalculateOfflineInsights = (currentList) => {
+  const recalculateOfflineInsights = (currentList, customIncome = userIncome, customSafety = safetyAllocation) => {
     const total = currentList.reduce((acc, curr) => acc + curr.amount, 0);
     setForecasts([
       { month: "2026-06", predicted_amount: Math.round(total * 1.1 + 100), confidence_interval: [total * 0.9, total * 1.3] },
       { month: "2026-07", predicted_amount: Math.round(total * 1.2 + 150), confidence_interval: [total * 0.95, total * 1.45] }
     ]);
+    
+    const savingsRatio = customSafety / 100.0;
+    const remainingRatio = 1.0 - savingsRatio;
+    const needsRatio = remainingRatio * (5.0 / 8.0);
+    const wantsRatio = remainingRatio * (3.0 / 8.0);
+    
+    const needs_cap = customIncome * needs_ratio;
+    const wants_cap = customIncome * wants_ratio;
+    const savings_cap = customIncome * savingsRatio;
+
     setInsights({
-      income: 4000.0,
-      recommended_savings: Math.max(800, 4000 - total),
+      income: customIncome,
+      recommended_savings: Math.max(savings_cap, customIncome - total),
       recommended_limits: {
-        "Food & Dining": 450.0,
-        "Transport": 180.0,
-        "Utilities": 250.0,
-        "Entertainment": 150.0
+        "Food & Dining": Math.round(wants_cap * 0.40),
+        "Transport": Math.round(wants_cap * 0.20),
+        "Utilities": Math.round(needs_cap * 0.30),
+        "Entertainment": Math.round(wants_cap * 0.20),
+        "Housing": Math.round(needs_cap * 0.50),
+        "Shopping": Math.round(wants_cap * 0.20)
       }
     });
   };
@@ -499,7 +525,7 @@ function App() {
           {currentTab === 'dashboard' && (
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Row gutter={[20, 20]}>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={6}>
                   <Card className="glass-panel" bordered={false}>
                     <Statistic 
                       title={<span style={{ color: 'var(--text-secondary)' }}>Gross Expenditure</span>}
@@ -510,18 +536,29 @@ function App() {
                     />
                   </Card>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={6}>
                   <Card className="glass-panel" bordered={false}>
                     <Statistic 
-                      title={<span style={{ color: 'var(--text-secondary)' }}>Income Safety Allocation</span>}
-                      value={insights?.income || 4000.00} 
+                      title={<span style={{ color: 'var(--text-secondary)' }}>Monthly Income</span>}
+                      value={userIncome} 
+                      precision={2} 
+                      prefix="₹" 
+                      valueStyle={{ color: '#6366f1', fontWeight: 'bold' }} 
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} md={6}>
+                  <Card className="glass-panel" bordered={false}>
+                    <Statistic 
+                      title={<span style={{ color: 'var(--text-secondary)' }}>Safety Savings Target</span>}
+                      value={(userIncome * safetyAllocation) / 100} 
                       precision={2} 
                       prefix="₹" 
                       valueStyle={{ color: '#10b981', fontWeight: 'bold' }} 
                     />
                   </Card>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={6}>
                   <Card className="glass-panel" bordered={false}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Budget Allocation Limit</span>
@@ -533,6 +570,89 @@ function App() {
                       strokeColor={{ '0%': '#10b881', '100%': '#ef4444' }} 
                       trailColor="rgba(255,255,255,0.05)"
                     />
+                  </Card>
+                </Col>
+              </Row>
+
+              <Row gutter={[20, 20]}>
+                <Col xs={24}>
+                  <Card className="glass-panel" bordered={false}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                        <div>
+                          <Title level={4} style={{ color: 'var(--text-primary)', margin: 0 }}>
+                            🎯 Financial Planning & Safety Allocation Configurator
+                          </Title>
+                          <Text style={{ color: 'var(--text-secondary)' }}>
+                            Personalize your monthly targets. The system automatically adjusts category thresholds and optimizer savings to match your safety margins.
+                          </Text>
+                        </div>
+                      </div>
+                      
+                      <Row gutter={[30, 20]} align="middle">
+                        <Col xs={24} md={10}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                            <Text strong style={{ color: 'var(--text-primary)' }}>Monthly Income (₹)</Text>
+                            <Input 
+                              type="number" 
+                              value={userIncome} 
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setUserIncome(val);
+                                localStorage.setItem('user_income', val);
+                              }}
+                              className="glass-input" 
+                              style={{ width: '100%' }}
+                              placeholder="e.g. 50000"
+                              prefix="₹"
+                            />
+                          </div>
+                        </Col>
+                        <Col xs={24} md={14}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <Text strong style={{ color: 'var(--text-primary)' }}>Safety Savings Allocation (%)</Text>
+                              <Text strong style={{ color: '#10b981' }}>{safetyAllocation}% Selected</Text>
+                            </div>
+                            <Slider 
+                              min={5} 
+                              max={50} 
+                              value={safetyAllocation} 
+                              onChange={(val) => {
+                                setSafetyAllocation(val);
+                                localStorage.setItem('safety_allocation', val);
+                              }}
+                              tooltip={{ formatter: (v) => `${v}%` }}
+                              marks={{
+                                10: { style: { color: 'var(--text-secondary)' }, label: '10%' },
+                                20: { style: { color: '#10b981', fontWeight: 'bold' }, label: '20% (Standard)' },
+                                30: { style: { color: 'var(--text-secondary)' }, label: '30%' },
+                                40: { style: { color: 'var(--text-secondary)' }, label: '40%' },
+                                50: { style: { color: 'var(--text-secondary)' }, label: '50%' }
+                              }}
+                            />
+                          </div>
+                        </Col>
+                      </Row>
+                      
+                      <Alert 
+                        type="success"
+                        showIcon
+                        message={
+                          <span style={{ fontWeight: 600 }}>
+                            Current Safety Target: ₹{((userIncome * safetyAllocation) / 100).toFixed(2)} / Month
+                          </span>
+                        }
+                        description={
+                          <span>
+                            This allocates <strong>{safetyAllocation}%</strong> of your income to secure reserves. 
+                            The remaining <strong>{100 - safetyAllocation}%</strong> is dynamically budgeted into 
+                            Needs (₹{((userIncome * (100 - safetyAllocation) * 5/8) / 100).toFixed(2)}) and Wants (₹{((userIncome * (100 - safetyAllocation) * 3/8) / 100).toFixed(2)}) using a 5:3 optimized priority model.
+                          </span>
+                        }
+                        style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', marginTop: 10 }}
+                      />
+                    </div>
                   </Card>
                 </Col>
               </Row>

@@ -87,14 +87,23 @@ class FinanceForecaster:
             return forecasts
 
     @staticmethod
-    def generate_budget_recommendations(expenses: List[Dict[str, Any]], monthly_income: float = 4000.0) -> Dict[str, Any]:
+    def generate_budget_recommendations(
+        expenses: List[Dict[str, Any]], 
+        monthly_income: float = 4000.0,
+        savings_ratio: float = 0.20
+    ) -> Dict[str, Any]:
         """
         Generates healthy budget bounds per category by blending active spending ratios with the 50/30/20 rule.
         """
-        # Set base target allocations
-        needs_cap = monthly_income * 0.50  # Utilities, Rent, Health
-        wants_cap = monthly_income * 0.30  # Food, Entertainment, Shopping
-        savings_cap = monthly_income * 0.20 # Standard savings target
+        # Set base target allocations by dynamically scaling needs and wants in 5:3 ratio over remaining income
+        remaining_ratio = 1.0 - savings_ratio
+        needs_ratio = remaining_ratio * (5.0 / 8.0)
+        wants_ratio = remaining_ratio * (3.0 / 8.0)
+
+        needs_cap = monthly_income * needs_ratio  # Utilities, Rent, Health
+        wants_cap = monthly_income * wants_ratio  # Food, Entertainment, Shopping
+        savings_cap = monthly_income * savings_ratio # Target savings target
+
 
         if not expenses:
             return {

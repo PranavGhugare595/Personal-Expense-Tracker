@@ -71,10 +71,14 @@ def get_expense_forecast(current_user: dict = Depends(get_current_user)) -> Any:
         )
 
 @router.get("/insights")
-def get_ml_spending_insights(current_user: dict = Depends(get_current_user)) -> Any:
+def get_ml_spending_insights(
+    income: float = 4000.0,
+    safety_allocation: float = 20.0,
+    current_user: dict = Depends(get_current_user)
+) -> Any:
     """
     Spending Pattern Analysis & Smart Category Recommendations.
-    Generates personalized targets by auditing spending ratios under the 50/30/20 standard.
+    Generates personalized targets by auditing spending ratios under custom user ratios.
     """
     try:
         query = {"userId": current_user["_id"]}
@@ -88,13 +92,18 @@ def get_ml_spending_insights(current_user: dict = Depends(get_current_user)) -> 
                 "date": exp["date"] if isinstance(exp["date"], str) else exp["date"].isoformat()
             })
             
-        recommendations = FinanceForecaster.generate_budget_recommendations(cleaned_expenses)
+        recommendations = FinanceForecaster.generate_budget_recommendations(
+            cleaned_expenses, 
+            monthly_income=income, 
+            savings_ratio=safety_allocation / 100.0
+        )
         return recommendations
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Insight engine failed: {str(e)}"
         )
+
 
 @router.post("/retrain", status_code=status.HTTP_200_OK)
 def force_category_retraining(current_user: dict = Depends(get_current_user)) -> Any:
