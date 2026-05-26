@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Modal, Progress, Tag, Statistic, Empty, message, Slider } from 'antd';
+import { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Modal, Progress, Tag, Statistic, Empty, message, Slider, Select } from 'antd';
 import { 
   LineChartOutlined, 
   FormOutlined, 
@@ -48,6 +48,7 @@ function App() {
   // Floating suggested ML categories state
   const [suggestedCategory, setSuggestedCategory] = useState(null);
   const [suggestionConfidence, setSuggestionConfidence] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
 
   // Auto load initial states on user login
   useEffect(() => {
@@ -403,6 +404,15 @@ function App() {
   const totalExpensesSum = expenses.reduce((acc, curr) => acc + curr.amount, 0);
   const budgetRatio = activeBudget ? (totalExpensesSum / activeBudget.total_limit) * 100 : 0;
 
+  // Standard Categories list & dynamic option compiler
+  const standardCategories = ['Housing', 'Utilities', 'Health & Wellness', 'Food & Dining', 'Shopping', 'Entertainment', 'Transport'];
+  const categoriesList = Array.from(new Set([
+    ...standardCategories,
+    ...expenses.map(e => e.category),
+    ...(suggestedCategory ? [suggestedCategory] : []),
+    ...(searchValue ? [searchValue] : [])
+  ])).filter(Boolean);
+
   // Render Login Panel if unauthenticated
   if (!token) {
     return (
@@ -723,7 +733,18 @@ function App() {
                       <Input type="number" step="0.01" placeholder="14.50" className="glass-input" />
                     </Form.Item>
                     <Form.Item name="category" label={<span style={{ color: 'var(--text-primary)' }}>Category</span>} rules={[{ required: true }]}>
-                      <Input placeholder="Click auto-suggest or type custom category" className="glass-input" />
+                      <Select 
+                        showSearch
+                        className="glass-select" 
+                        placeholder="Select category or type custom"
+                        searchValue={searchValue}
+                        onSearch={(val) => setSearchValue(val)}
+                        onChange={(val) => setSearchValue('')}
+                        options={categoriesList.map(cat => ({ value: cat, label: cat }))}
+                        filterOption={(input, option) =>
+                          (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                      />
                     </Form.Item>
                     <Form.Item name="payment_method" label={<span style={{ color: 'var(--text-primary)' }}>Payment Route</span>}>
                       <Input placeholder="Credit Card, Cash, etc." className="glass-input" />

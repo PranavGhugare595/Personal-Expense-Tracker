@@ -126,6 +126,37 @@
         .ant-statistic-content {
             color: var(--text-primary) !important;
         }
+
+        /* Glass-Select Styling for Dropdowns */
+        .glass-select .ant-select-selector {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(226, 232, 240, 1) !important;
+            color: var(--text-primary) !important;
+            border-radius: 10px !important;
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: all 0.3s ease !important;
+        }
+        .glass-select .ant-select-selector:hover,
+        .glass-select .ant-select-selector:focus,
+        .glass-select.ant-select-focused .ant-select-selector {
+            border-color: rgba(99, 102, 241, 0.5) !important;
+            background: rgba(255, 255, 255, 1) !important;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.1) !important;
+        }
+        .ant-select-dropdown {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.1) !important;
+        }
+        .ant-select-item-option-selected {
+            background: rgba(99, 102, 241, 0.08) !important;
+            color: #4f46e5 !important;
+            font-weight: 600 !important;
+        }
     </style>
 </head>
 <body>
@@ -133,7 +164,7 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Progress, Tag, Statistic, Empty, message, Slider } = antd;
+        const { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Progress, Tag, Statistic, Empty, message, Slider, Select } = antd;
 
         // Standard Icons compiled via SVG components for direct CDN compatibility
         const DashboardIcon = () => (
@@ -181,6 +212,7 @@
             // Interface states
             const [loading, setLoading] = useState(false);
             const [mlLoading, setMlLoading] = useState(false);
+            const [searchValue, setSearchValue] = useState('');
             const [isRegistering, setIsRegistering] = useState(false);
             const [suggestedCategory, setSuggestedCategory] = useState(null);
             const [suggestionConfidence, setSuggestionConfidence] = useState(null);
@@ -515,6 +547,15 @@
             const limit = activeBudget?.total_limit || 2000.0;
             const ratio = (totalSpent / limit) * 100;
 
+            // Standard Categories list & dynamic option compiler
+            const standardCategories = ['Housing', 'Utilities', 'Health & Wellness', 'Food & Dining', 'Shopping', 'Entertainment', 'Transport'];
+            const categoriesList = Array.from(new Set([
+                ...standardCategories,
+                ...expenses.map(e => e.category),
+                ...(suggestedCategory ? [suggestedCategory] : []),
+                ...(searchValue ? [searchValue] : [])
+            ])).filter(Boolean);
+
             if (!token) {
                 return (
                     <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -732,7 +773,18 @@
                                                     <Input className="glass-input" type="number" step="0.01" placeholder="12.50" />
                                                 </Form.Item>
                                                 <Form.Item name="category" label={<span style={{ color: '#fff' }}>Category</span>} rules={[{ required: true }]}>
-                                                    <Input className="glass-input" placeholder="Category" />
+                                                    <Select 
+                                                        showSearch
+                                                        className="glass-select" 
+                                                        placeholder="Select category or type custom"
+                                                        searchValue={searchValue}
+                                                        onSearch={(val) => setSearchValue(val)}
+                                                        onChange={(val) => setSearchValue('')}
+                                                        options={categoriesList.map(cat => ({ value: cat, label: cat }))}
+                                                        filterOption={(input, option) =>
+                                                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                        }
+                                                    />
                                                 </Form.Item>
                                                 <Button type="primary" htmlType="submit" className="btn-premium-neon" block loading={loading}>
                                                     Log Transaction

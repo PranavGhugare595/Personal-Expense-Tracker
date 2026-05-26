@@ -71,6 +71,41 @@ body {
   box-shadow: 0 0 10px rgba(99, 102, 241, 0.1) !important;
 }
 
+/* Premium styled Select dropdown matching light glass theme */
+.glass-select .ant-select-selector {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(226, 232, 240, 1) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.3s ease !important;
+}
+
+.glass-select .ant-select-selector:hover,
+.glass-select .ant-select-selector:focus,
+.glass-select.ant-select-focused .ant-select-selector {
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.1) !important;
+}
+
+.ant-select-dropdown {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.1) !important;
+}
+
+.ant-select-item-option-selected {
+  background: rgba(99, 102, 241, 0.08) !important;
+  color: #4f46e5 !important;
+  font-weight: 600 !important;
+}
+
+
 /* Glowing Neon Actions Buttons */
 .btn-premium-neon {
   background: var(--primary-gradient) !important;
