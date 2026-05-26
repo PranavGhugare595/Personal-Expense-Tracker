@@ -434,7 +434,7 @@ function App() {
       title: 'Amount', 
       dataIndex: 'amount', 
       key: 'amount', 
-      render: (val) => <span style={{ color: '#ef4444', fontWeight: 'bold' }}>-${parseFloat(val).toFixed(2)}</span> 
+      render: (val) => <span style={{ color: '#ef4444', fontWeight: 'bold' }}>-₹{parseFloat(val).toFixed(2)}</span> 
     },
     { 
       title: 'Date', 
@@ -505,7 +505,7 @@ function App() {
                       title={<span style={{ color: 'var(--text-secondary)' }}>Gross Expenditure</span>}
                       value={totalExpensesSum} 
                       precision={2} 
-                      prefix="-$" 
+                      prefix="-₹" 
                       valueStyle={{ color: '#ef4444', fontWeight: 'bold' }} 
                     />
                   </Card>
@@ -516,7 +516,7 @@ function App() {
                       title={<span style={{ color: 'var(--text-secondary)' }}>Income Safety Allocation</span>}
                       value={insights?.income || 4000.00} 
                       precision={2} 
-                      prefix="$" 
+                      prefix="₹" 
                       valueStyle={{ color: '#10b981', fontWeight: 'bold' }} 
                     />
                   </Card>
@@ -568,7 +568,7 @@ function App() {
                         ).map(([cat, total]) => (
                           <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Text style={{ color: 'var(--text-secondary)' }}>{cat}</Text>
-                            <Tag color="cyan">${parseFloat(total).toFixed(2)}</Tag>
+                            <Tag color="cyan">₹{parseFloat(total).toFixed(2)}</Tag>
                           </div>
                         ))}
                       </Space>
@@ -592,7 +592,7 @@ function App() {
                         className="glass-input"
                       />
                     </Form.Item>
-                    <Form.Item name="amount" label={<span style={{ color: 'var(--text-primary)' }}>Amount Paid ($)</span>} rules={[{ required: true }]}>
+                    <Form.Item name="amount" label={<span style={{ color: 'var(--text-primary)' }}>Amount Paid (₹)</span>} rules={[{ required: true }]}>
                       <Input type="number" step="0.01" placeholder="14.50" className="glass-input" />
                     </Form.Item>
                     <Form.Item name="category" label={<span style={{ color: 'var(--text-primary)' }}>Resolved Category</span>} rules={[{ required: true }]}>
@@ -651,7 +651,7 @@ function App() {
               <Card className="glass-panel" title={<span style={{ color: 'var(--text-primary)' }}>Active Target Budget Bounds</span>} bordered={false}>
                 <Row gutter={[20, 20]}>
                   <Col xs={24} md={8}>
-                    <Statistic title={<span style={{ color: 'var(--text-secondary)' }}>Combined Monthly Limit</span>} value={activeBudget?.total_limit || 2000.0} prefix="$" valueStyle={{ color: 'var(--text-primary)' }} />
+                    <Statistic title={<span style={{ color: 'var(--text-secondary)' }}>Combined Monthly Limit</span>} value={activeBudget?.total_limit || 2000.0} prefix="₹" valueStyle={{ color: 'var(--text-primary)' }} />
                   </Col>
                   <Col xs={24} md={16}>
                     <Paragraph style={{ color: 'var(--text-secondary)' }}>
@@ -672,7 +672,7 @@ function App() {
                           <div style={{ background: 'rgba(255,255,255,0.01)', padding: 20, borderRadius: 15, border: '1px solid var(--glass-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                               <Text strong style={{ color: 'var(--text-primary)' }}>{cat}</Text>
-                              <Text style={{ color: percent > 90 ? '#ef4444' : 'var(--text-secondary)' }}>${spent.toFixed(0)} / ${limit.toFixed(0)}</Text>
+                              <Text style={{ color: percent > 90 ? '#ef4444' : 'var(--text-secondary)' }}>₹{spent.toFixed(0)} / ₹{limit.toFixed(0)}</Text>
                             </div>
                             <Progress 
                               percent={Math.min(100, percent)} 
@@ -713,9 +713,9 @@ function App() {
                             <div>
                               <Text strong style={{ color: 'var(--text-primary)' }}>Month: {f.month}</Text>
                               <br />
-                              <Text type="secondary">Confidence Bounds: ${f.confidence_interval[0].toFixed(0)} - ${f.confidence_interval[1].toFixed(0)}</Text>
+                              <Text type="secondary">Confidence Bounds: ₹{f.confidence_interval[0].toFixed(0)} - ₹{f.confidence_interval[1].toFixed(0)}</Text>
                             </div>
-                            <Statistic value={f.predicted_amount} precision={2} prefix="$" valueStyle={{ color: '#a855f7', fontWeight: 'bold' }} />
+                            <Statistic value={f.predicted_amount} precision={2} prefix="₹" valueStyle={{ color: '#a855f7', fontWeight: 'bold' }} />
                           </div>
                         ))}
                       </Space>
@@ -732,7 +732,7 @@ function App() {
                           <div>
                             <Text strong style={{ color: '#10b981' }}>Optimized Savings Allocation</Text>
                             <br />
-                            <Text style={{ color: 'var(--text-secondary)' }}>Suggested minimum target savings: <strong style={{ color: 'var(--text-primary)' }}>${insights.recommended_savings.toFixed(2)}</strong></Text>
+                            <Text style={{ color: 'var(--text-secondary)' }}>Suggested minimum target savings: <strong style={{ color: 'var(--text-primary)' }}>₹{insights.recommended_savings.toFixed(2)}</strong></Text>
                           </div>
                         </div>
 
@@ -746,7 +746,7 @@ function App() {
                               <div>
                                 <Text style={{ color: 'var(--text-primary)' }}>{cat}</Text>
                                 <br />
-                                <Text type="secondary" style={{ fontSize: 12 }}>Spent: ${currentSpent.toFixed(0)} / Target Max: ${recommendedLimit.toFixed(0)}</Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>Spent: ₹{currentSpent.toFixed(0)} / Target Max: ₹{recommendedLimit.toFixed(0)}</Text>
                               </div>
                               <Tag color={isCompliant ? "emerald" : "rose"}>
                                 {isCompliant ? "Compliant Ratio" : "Alert: Over Target"}
