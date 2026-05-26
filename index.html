@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Expense Tracker Suite</title>
+    <!-- Outfit Typography from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ant Design CSS (v5 compiled custom skin elements) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.10/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.2/antd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.2/reset.min.css" />
+    
+    <!-- React & Babel CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.0/babel.min.js"></script>
+
+    <!-- Custom Premium Glassmorphic Styling System -->
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --dark-bg: #090d16;
+            --dark-card: rgba(17, 25, 40, 0.75);
+            --glass-card: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --neon-border: rgba(99, 102, 241, 0.4);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --neon-glow: 0 0 25px rgba(99, 102, 241, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: var(--dark-card) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .glass-panel:hover {
+            border-color: var(--neon-border) !important;
+            box-shadow: var(--neon-glow) !important;
+            transform: translateY(-3px);
+        }
+
+        .glow-title {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-primary) !important;
+            border-radius: 10px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .glass-input:focus, .glass-input:hover {
+            border-color: rgba(168, 85, 247, 0.6) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2) !important;
+        }
+
+        .btn-premium-neon {
+            background: var(--primary-gradient) !important;
+            border: none !important;
+            color: white !important;
+            font-weight: 600 !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .btn-premium-neon:hover {
+            transform: scale(1.02) !important;
+            box-shadow: var(--neon-glow), 0 6px 20px rgba(236, 72, 153, 0.4) !important;
+        }
+
+        /* Override Ant Design component backgrounds to maintain glassmorphism integration */
+        .ant-layout {
+            background: transparent !important;
+        }
+        .ant-menu-dark {
+            background: transparent !important;
+        }
+        .ant-table {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+        }
+        .ant-table-thead > tr > th {
+            background: rgba(255, 255, 255, 0.03) !important;
+            color: var(--text-secondary) !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+        .ant-table-tbody > tr > td {
+            border-bottom: 1px solid var(--glass-border) !important;
+        }
+        .ant-table-row:hover > td {
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+        .ant-statistic-title {
+            color: var(--text-secondary) !important;
+        }
+        .ant-statistic-content {
+            color: var(--text-primary) !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, Alert, Table, Progress, Tag, Statistic, Empty, message } = antd;
+
+        // Standard Icons compiled via SVG components for direct CDN compatibility
+        const DashboardIcon = () => (
+            <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+        );
+
+        const FormIcon = () => (
+            <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+        );
+
+        const BudgetIcon = () => (
+            <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const InsightIcon = () => (
+            <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+        );
+
+        const API_BASE_URL = "http://localhost:8000/api/v1";
+
+        function App() {
+            const [collapsed, setCollapsed] = useState(false);
+            const [currentTab, setCurrentTab] = useState('dashboard');
+            const [token, setToken] = useState(localStorage.getItem('jwt_token') || null);
+            const [user, setUser] = useState(null);
+
+            // States
+            const [expenses, setExpenses] = useState([]);
+            const [activeBudget, setActiveBudget] = useState(null);
+            const [forecasts, setForecasts] = useState([]);
+            const [insights, setInsights] = useState(null);
+
+            // Interface states
+            const [loading, setLoading] = useState(false);
+            const [mlLoading, setMlLoading] = useState(false);
+            const [isRegistering, setIsRegistering] = useState(false);
+            const [suggestedCategory, setSuggestedCategory] = useState(null);
+            const [suggestionConfidence, setSuggestionConfidence] = useState(null);
+
+            const [expenseForm] = Form.useForm();
+
+            useEffect(() => {
+                if (token) {
+                    fetchUserProfile();
+                    fetchExpenses();
+                    fetchBudget();
+                    fetchMLInsights();
+                }
+            }, [token]);
+
+            // Form actions
+            const handleLogin = async (values) => {
+                setLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(values),
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        localStorage.setItem('jwt_token', data.access_token);
+                        setToken(data.access_token);
+                        message.success("Authenticated successfully!");
+                    } else {
+                        message.error(data.detail || "Authentication rejected.");
+                    }
+                } catch (err) {
+                    console.warn("Backend unreached, bootstrapping browser sandbox mode.");
+                    localStorage.setItem('jwt_token', 'offline_sandbox_token');
+                    setToken('offline_sandbox_token');
+                    setUser({ name: "Jane Doe (Offline Sandbox)", email: values.email });
+                    loadOfflineSandboxData();
+                    message.warning("FastAPI Offline: Operating local sandboxed browser storage!");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleRegister = async (values) => {
+                setLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...values, currency: 'USD' }),
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        message.success("Registration complete! Please login.");
+                        setIsRegistering(false);
+                    } else {
+                        message.error(data.detail || "Registration failed.");
+                    }
+                } catch (err) {
+                    message.error("Could not reach local FastAPI server.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleLogout = () => {
+                localStorage.removeItem('jwt_token');
+                setToken(null);
+                setUser(null);
+                setExpenses([]);
+                setActiveBudget(null);
+                setForecasts([]);
+                setInsights(null);
+                message.info("Secure logged out complete.");
+            };
+
+            // DB sync handlers
+            const fetchUserProfile = async () => {
+                if (token === 'offline_sandbox_token') return;
+                try {
+                    const res = await fetch(`${API_BASE_URL}/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setUser(data);
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchExpenses = async () => {
+                if (token === 'offline_sandbox_token') return;
+                setLoading(true);
+                try {
+                    const res = await fetch(`${API_BASE_URL}/expenses`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setExpenses(data);
+                    }
+                } catch (e) { console.error(e); }
+                finally { setLoading(false); }
+            };
+
+            const fetchBudget = async () => {
+                if (token === 'offline_sandbox_token') return;
+                try {
+                    const res = await fetch(`${API_BASE_URL}/budgets/active`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        setActiveBudget(data);
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchMLInsights = async () => {
+                if (token === 'offline_sandbox_token') return;
+                try {
+                    const fRes = await fetch(`${API_BASE_URL}/ml/forecast`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (fRes.ok) {
+                        const fData = await fRes.json();
+                        setForecasts(fData.forecasts);
+                    }
+
+                    const iRes = await fetch(`${API_BASE_URL}/ml/insights`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (iRes.ok) {
+                        const iData = await iRes.json();
+                        setInsights(iData);
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            // NLP triggers
+            const handleDescriptionChange = async (e) => {
+                const text = e.target.value;
+                if (text.length < 5) return;
+
+                setMlLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/ml/suggest-category`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ description: text }),
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        setSuggestedCategory(data.suggested_category);
+                        setSuggestionConfidence(data.confidence);
+                    }
+                } catch (err) {
+                    // Sandbox heuristics
+                    const lower = text.toLowerCase();
+                    let cat = "Others";
+                    let conf = 0.65;
+                    if (lower.includes("starbucks") || lower.includes("coffee") || lower.includes("burger") || lower.includes("food") || lower.includes("dinner")) {
+                        cat = "Food & Dining";
+                        conf = 0.95;
+                    } else if (lower.includes("uber") || lower.includes("taxi") || lower.includes("gas") || lower.includes("cab")) {
+                        cat = "Transport";
+                        conf = 0.93;
+                    } else if (lower.includes("netflix") || lower.includes("movie") || lower.includes("spotify") || lower.includes("game")) {
+                        cat = "Entertainment";
+                        conf = 0.88;
+                    } else if (lower.includes("electricity") || lower.includes("wifi") || lower.includes("bill")) {
+                        cat = "Utilities";
+                        conf = 0.91;
+                    }
+                    setSuggestedCategory(cat);
+                    setSuggestionConfidence(conf);
+                } finally {
+                    setMlLoading(false);
+                }
+            };
+
+            const applySuggestedCategory = () => {
+                if (suggestedCategory) {
+                    expenseForm.setFieldsValue({ category: suggestedCategory });
+                    message.success(`Injected classification: ${suggestedCategory}`);
+                }
+            };
+
+            const handleAddExpense = async (values) => {
+                setLoading(true);
+                const newExpense = {
+                    ...values,
+                    amount: parseFloat(values.amount),
+                    ml_metadata: {
+                        is_suggested: suggestedCategory === values.category,
+                        confidence_score: suggestedCategory === values.category ? suggestionConfidence : null,
+                        original_description: values.description
+                    }
+                };
+
+                if (token === 'offline_sandbox_token') {
+                    const mockRecord = {
+                        ...newExpense,
+                        _id: String(Math.random()),
+                        date: new Date().toISOString(),
+                        userId: 'sandbox_user'
+                    };
+                    const updated = [mockRecord, ...expenses];
+                    setExpenses(updated);
+                    recalculateOfflineInsights(updated);
+                    expenseForm.resetFields();
+                    setSuggestedCategory(null);
+                    message.success("Logged locally.");
+                    setLoading(false);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/expenses`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(newExpense),
+                    });
+                    if (response.ok) {
+                        message.success("Transaction written to cloud DB.");
+                        expenseForm.resetFields();
+                        setSuggestedCategory(null);
+                        fetchExpenses();
+                        fetchMLInsights();
+                    }
+                } catch (err) {
+                    message.error("Server connection lost.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleDeleteExpense = async (id) => {
+                if (token === 'offline_sandbox_token') {
+                    const updated = expenses.filter(e => e._id !== id);
+                    setExpenses(updated);
+                    recalculateOfflineInsights(updated);
+                    message.success("Removed locally.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        message.success("Deleted transaction.");
+                        fetchExpenses();
+                        fetchMLInsights();
+                    }
+                } catch (e) { message.error("Database sync failed."); }
+            };
+
+            // Local fallback data generators
+            const loadOfflineSandboxData = () => {
+                const sandboxExpenses = [
+                    { _id: '1', amount: 52.00, description: "Supermarket groceries checkout", category: "Food & Dining", date: "2026-05-25T14:00:00Z" },
+                    { _id: '2', amount: 12.50, description: "Morning Starbucks coffee", category: "Food & Dining", date: "2026-05-24T09:30:00Z" },
+                    { _id: '3', amount: 35.00, description: "Uber office transport taxi", category: "Transport", date: "2026-05-22T19:00:00Z" },
+                    { _id: '4', amount: 99.00, description: "High speed Wifi bill router", category: "Utilities", date: "2026-05-18T08:00:00Z" }
+                ];
+                setExpenses(sandboxExpenses);
+                setActiveBudget({
+                    month: "2026-05",
+                    total_limit: 2000.0,
+                    category_limits: { "Food & Dining": 500.0, "Transport": 200.0, "Utilities": 300.0 }
+                });
+                recalculateOfflineInsights(sandboxExpenses);
+            };
+
+            const recalculateOfflineInsights = (currentList) => {
+                const total = currentList.reduce((acc, curr) => acc + curr.amount, 0);
+                setForecasts([
+                    { month: "2026-06", predicted_amount: Math.round(total * 1.1 + 80), confidence_interval: [total * 0.9, total * 1.3] },
+                    { month: "2026-07", predicted_amount: Math.round(total * 1.25 + 100), confidence_interval: [total * 0.95, total * 1.45] }
+                ]);
+                setInsights({
+                    income: 4000.0,
+                    recommended_savings: Math.max(900, 4000 - total),
+                    recommended_limits: {
+                        "Food & Dining": 450.0,
+                        "Transport": 190.0,
+                        "Utilities": 250.0
+                    }
+                });
+            };
+
+            const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+            const limit = activeBudget?.total_limit || 2000.0;
+            const ratio = (totalSpent / limit) * 100;
+
+            if (!token) {
+                return (
+                    <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <div className="glass-panel" style={{ padding: 40, width: 400 }}>
+                            <div style={{ textAlign: 'center', marginBottom: 30 }}>
+                                <Title level={2} className="glow-title" style={{ margin: 0 }}>AI Expense Tracker</Title>
+                                <Paragraph style={{ color: 'var(--text-secondary)' }}>Premium ML Analytical Platform</Paragraph>
+                            </div>
+                            
+                            {isRegistering ? (
+                                <Form onFinish={handleRegister} layout="vertical">
+                                    <Form.Item name="name" label={<span style={{ color: '#fff' }}>Full Name</span>} rules={[{ required: true }]}>
+                                        <Input className="glass-input" placeholder="Jane Doe" />
+                                    </Form.Item>
+                                    <Form.Item name="email" label={<span style={{ color: '#fff' }}>Email</span>} rules={[{ required: true, type: 'email' }]}>
+                                        <Input className="glass-input" placeholder="jane@example.com" />
+                                    </Form.Item>
+                                    <Form.Item name="password" label={<span style={{ color: '#fff' }}>Password</span>} rules={[{ required: true }]}>
+                                        <Input.Password className="glass-input" placeholder="••••••••" />
+                                    </Form.Item>
+                                    <Button type="primary" htmlType="submit" className="btn-premium-neon" block loading={loading}>
+                                        Register Now
+                                    </Button>
+                                    <div style={{ textAlign: 'center', marginTop: 15 }}>
+                                        <a onClick={() => setIsRegistering(false)} style={{ color: '#a855f7' }}>Login instead</a>
+                                    </div>
+                                </Form>
+                            ) : (
+                                <Form onFinish={handleLogin} layout="vertical">
+                                    <Form.Item name="email" label={<span style={{ color: '#fff' }}>Email Address</span>} rules={[{ required: true, type: 'email' }]}>
+                                        <Input className="glass-input" placeholder="jane@example.com" />
+                                    </Form.Item>
+                                    <Form.Item name="password" label={<span style={{ color: '#fff' }}>Secret Password</span>} rules={[{ required: true }]}>
+                                        <Input.Password className="glass-input" placeholder="••••••••" />
+                                    </Form.Item>
+                                    <Button type="primary" htmlType="submit" className="btn-premium-neon" block loading={loading}>
+                                        Authenticate Suite
+                                    </Button>
+                                    <div style={{ textAlign: 'center', marginTop: 15 }}>
+                                        <a onClick={() => setIsRegistering(true)} style={{ color: '#a855f7' }}>Create accounts</a>
+                                    </div>
+                                </Form>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            const tableColumns = [
+                { title: 'Memo', dataIndex: 'description', key: 'description', render: t => <Text style={{ color: '#fff', fontWeight: 500 }}>{t}</Text> },
+                { title: 'Category', dataIndex: 'category', key: 'category', render: c => <Tag color="purple">{c}</Tag> },
+                { title: 'Amount', dataIndex: 'amount', key: 'amount', render: a => <span style={{ color: '#f43f5e', fontWeight: 'bold' }}>-${parseFloat(a).toFixed(2)}</span> },
+                { title: 'Action', key: 'action', render: (_, r) => <Button type="text" danger onClick={() => handleDeleteExpense(r._id)}>Delete</Button> }
+            ];
+
+            return (
+                <Layout style={{ minHeight: '100vh' }}>
+                    <Sider collapsible collapsed={collapsed} onCollapse={v => setCollapsed(v)} style={{ background: 'rgba(11, 15, 25, 0.9)', borderRight: '1px solid var(--glass-border)' }}>
+                        <div style={{ height: 60, margin: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ background: 'var(--primary-gradient)', width: 12, height: 12, borderRadius: 6 }}></div>
+                            {!collapsed && <span style={{ color: '#fff', fontWeight: 'bold' }}>Expense Tracker</span>}
+                        </div>
+                        <Menu theme="dark" mode="inline" selectedKeys={[currentTab]} onClick={({ key }) => setCurrentTab(key)}>
+                            <Menu.Item key="dashboard" icon={<DashboardIcon />}>Dashboard</Menu.Item>
+                            <Menu.Item key="log" icon={<FormIcon />}>Log Expense</Menu.Item>
+                            <Menu.Item key="budgets" icon={<BudgetIcon />}>Active Limits</Menu.Item>
+                            <Menu.Item key="insights" icon={<InsightIcon />}>AI Predictor Room</Menu.Item>
+                        </Menu>
+                        <div style={{ position: 'absolute', bottom: 20, width: '100%', padding: '0 20px' }}>
+                            <Button type="primary" size="small" danger onClick={handleLogout} block={!collapsed}>Logout</Button>
+                        </div>
+                    </Sider>
+
+                    <Layout>
+                        <Header style={{ background: 'transparent', padding: '0 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Title level={3} style={{ color: '#fff', margin: 0, textTransform: 'capitalize' }}>{currentTab}</Title>
+                            <Space>
+                                <Tag color="cyan">{user?.name || "Premium User"}</Tag>
+                                {token === 'offline_sandbox_token' && <Tag color="orange">Offline Sandbox Mode</Tag>}
+                            </Space>
+                        </Header>
+
+                        <Content style={{ padding: '30px' }}>
+                            {currentTab === 'dashboard' && (
+                                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                                    <Row gutter={[20, 20]}>
+                                        <Col xs={24} md={8}>
+                                            <Card className="glass-panel">
+                                                <Statistic title="Total Expenses" value={totalSpent} precision={2} prefix="-$" valueStyle={{ color: '#ef4444', fontWeight: 'bold' }} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={24} md={8}>
+                                            <Card className="glass-panel">
+                                                <Statistic title="Income Track" value={insights?.income || 4000.0} precision={2} prefix="$" valueStyle={{ color: '#10b981', fontWeight: 'bold' }} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={24} md={8}>
+                                            <Card className="glass-panel">
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                                                    <span style={{ color: 'var(--text-secondary)' }}>Budget Limits</span>
+                                                    <span style={{ color: '#fff' }}>{ratio.toFixed(0)}% Used</span>
+                                                </div>
+                                                <Progress percent={Math.round(ratio)} strokeColor={{ '0%': '#10b981', '100%': '#ef4444' }} trailColor="rgba(255,255,255,0.03)" />
+                                            </Card>
+                                        </Col>
+                                    </Row>
+
+                                    <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Expense Stream</span>}>
+                                        {expenses.length === 0 ? (
+                                            <Empty description="No transactions logged yet" />
+                                        ) : (
+                                            <Table dataSource={expenses} columns={tableColumns} rowKey="_id" pagination={false} />
+                                        )}
+                                    </Card>
+                                </Space>
+                            )}
+
+                            {currentTab === 'log' && (
+                                <Row gutter={[20, 20]}>
+                                    <Col xs={24} md={12}>
+                                        <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Submit New Expense (Auto-Categorized)</span>}>
+                                            <Form form={expenseForm} layout="vertical" onFinish={handleAddExpense}>
+                                                <Form.Item name="description" label={<span style={{ color: '#fff' }}>Transaction description</span>} rules={[{ required: true }]}>
+                                                    <Input className="glass-input" placeholder="e.g. Starbucks lunch coffee" onChange={handleDescriptionChange} />
+                                                </Form.Item>
+                                                <Form.Item name="amount" label={<span style={{ color: '#fff' }}>Amount ($)</span>} rules={[{ required: true }]}>
+                                                    <Input className="glass-input" type="number" step="0.01" placeholder="12.50" />
+                                                </Form.Item>
+                                                <Form.Item name="category" label={<span style={{ color: '#fff' }}>Category</span>} rules={[{ required: true }]}>
+                                                    <Input className="glass-input" placeholder="Category" />
+                                                </Form.Item>
+                                                <Button type="primary" htmlType="submit" className="btn-premium-neon" block loading={loading}>
+                                                    Log Transaction
+                                                </Button>
+                                            </Form>
+                                        </Card>
+                                    </Col>
+                                    
+                                    <Col xs={24} md={12}>
+                                        <Card className="glass-panel" title={<span style={{ color: '#fff' }}>AI Auto-Classifier Assist</span>}>
+                                            {mlLoading ? (
+                                                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                                    <Paragraph style={{ color: 'var(--text-secondary)' }}>Analyzing text patterns...</Paragraph>
+                                                </div>
+                                            ) : suggestedCategory ? (
+                                                <Space direction="vertical" style={{ width: '100%' }}>
+                                                    <Alert message="Suggested Category Found!" description={`NLP classified text description to category.`} type="info" />
+                                                    <div style={{ padding: '20px 0', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px dashed rgba(255,255,255,0.2)' }}>
+                                                        <Title level={3} style={{ color: '#a855f7', margin: 0 }}>{suggestedCategory}</Title>
+                                                        <Text type="secondary">Confidence Score: {(suggestionConfidence*100).toFixed(1)}%</Text>
+                                                    </div>
+                                                    <Button type="dashed" className="btn-premium-neon" style={{ background: 'transparent' }} onClick={applySuggestedCategory} block>
+                                                        Apply AI Category
+                                                    </Button>
+                                                </Space>
+                                            ) : (
+                                                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
+                                                    Begin typing in the Transaction description (e.g. "Starbucks coffee") to trigger live ML categorization.
+                                                </div>
+                                            )}
+                                        </Card>
+                                    </Col>
+                                </Row>
+                            )}
+
+                            {currentTab === 'budgets' && (
+                                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                                    <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Active Target Budget Bounds</span>}>
+                                        <Statistic title="Total Monthly Limit" value={activeBudget?.total_limit || 2000.0} prefix="$" valueStyle={{ color: '#fff' }} />
+                                    </Card>
+
+                                    <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Category Budgets Monitoring</span>}>
+                                        {activeBudget?.category_limits ? (
+                                            <Row gutter={[20, 20]}>
+                                                {Object.entries(activeBudget.category_limits).map(([cat, val]) => {
+                                                    const spent = expenses.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
+                                                    const percentage = Math.round((spent / val) * 100);
+                                                    return (
+                                                        <Col xs={24} md={8} key={cat}>
+                                                            <div style={{ background: 'rgba(255,255,255,0.01)', padding: 15, borderRadius: 12, border: '1px solid var(--glass-border)' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                                                                    <Text style={{ color: '#fff' }} strong>{cat}</Text>
+                                                                    <Text style={{ color: 'var(--text-secondary)' }}>${spent.toFixed(0)} / ${val.toFixed(0)}</Text>
+                                                                </div>
+                                                                <Progress percent={Math.min(100, percentage)} strokeColor={percentage > 100 ? '#f43f5e' : '#6366f1'} trailColor="rgba(255,255,255,0.02)" />
+                                                            </div>
+                                                        </Col>
+                                                    );
+                                                })}
+                                            </Row>
+                                        ) : <Empty />}
+                                    </Card>
+                                </Space>
+                            )}
+
+                            {currentTab === 'insights' && (
+                                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                                    <Row gutter={[20, 20]}>
+                                        <Col xs={24} md={12}>
+                                            <Card className="glass-panel" title={<span style={{ color: '#fff' }}>3-Month Expense Forecasting</span>}>
+                                                {forecasts.length === 0 ? <Empty /> : (
+                                                    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                                                        <Alert message="Time-Series Linear Forecasting Loaded" type="success" showIcon />
+                                                        {forecasts.map((f, i) => (
+                                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid var(--glass-border)' }}>
+                                                                <div>
+                                                                    <Text strong style={{ color: '#fff' }}>Month: {f.month}</Text>
+                                                                    <br />
+                                                                    <Text type="secondary" style={{ fontSize: 12 }}>Interval: ${f.confidence_interval[0].toFixed(0)} - ${f.confidence_interval[1].toFixed(0)}</Text>
+                                                                </div>
+                                                                <Statistic value={f.predicted_amount} precision={2} prefix="$" valueStyle={{ color: '#a855f7', fontWeight: 'bold' }} />
+                                                            </div>
+                                                        ))}
+                                                    </Space>
+                                                )}
+                                            </Card>
+                                        </Col>
+
+                                        <Col xs={24} md={12}>
+                                            <Card className="glass-panel" title={<span style={{ color: '#fff' }}>Optimization Insights</span>}>
+                                                {insights ? (
+                                                    <Space direction="vertical" style={{ width: '100%' }}>
+                                                        <div style={{ background: 'rgba(16,185,129,0.05)', padding: 15, borderRadius: 12, border: '1px solid rgba(16,185,129,0.1)', marginBottom: 15 }}>
+                                                            <Text style={{ color: '#10b981' }} strong>Recommended Monthly Savings Target</Text>
+                                                            <Title level={4} style={{ color: '#fff', margin: '5px 0 0 0' }}>${insights.recommended_savings.toFixed(2)}</Title>
+                                                        </div>
+
+                                                        <Text strong style={{ color: '#fff' }}>Category Recommendations vs Spent:</Text>
+                                                        {Object.entries(insights.recommended_limits).map(([cat, recommendedLimit]) => {
+                                                            const currentSpent = expenses.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
+                                                            const compliant = currentSpent <= recommendedLimit;
+                                                            return (
+                                                                <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--glass-border)', padding: '10px 0' }}>
+                                                                    <div>
+                                                                        <Text style={{ color: '#fff' }}>{cat}</Text>
+                                                                        <br />
+                                                                        <Text type="secondary" style={{ fontSize: 12 }}>Limit recommendation: ${recommendedLimit.toFixed(0)}</Text>
+                                                                    </div>
+                                                                    <Tag color={compliant ? "success" : "warning"}>
+                                                                        {compliant ? "Within Limit" : "Over Recommended"}
+                                                                    </Tag>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </Space>
+                                                ) : <Empty />}
+                                            </Card>
+                                        </Col>
+                                    </Row>
+                                </Space>
+                            )}
+                        </Content>
+                    </Layout>
+                </Layout>
+            );
+        }
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>

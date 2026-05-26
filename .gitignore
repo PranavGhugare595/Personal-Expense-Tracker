@@ -1,0 +1,58 @@
+# ========================================
+# Personal Expense Tracker - .gitignore
+# ========================================
+
+# ---- Python Environment ----
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ---- Sensitive Environment Files ----
+backend/.env
+frontend/.env
+*.env
+
+# ---- ML Model Artifacts (large binaries - regenerate on boot) ----
+backend/app/ml/models/*.pkl
+backend/app/ml/models/*.bin
+backend/app/ml/models/*.model
+
+# ---- Local Database Fallback ----
+backend/mock_database.json
+
+# ---- Node Modules ----
+frontend/node_modules/
+node_modules/
+
+# ---- Vite Build Output ----
+frontend/dist/
+frontend/.vite/
+
+# ---- IDE & OS Files ----
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Pytest Cache ----
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- Logs ----
+*.log
+logs/
