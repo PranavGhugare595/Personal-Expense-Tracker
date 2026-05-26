@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,9 +14,32 @@ app = FastAPI(
 )
 
 # CORS configuration
+raw_origins = settings.CORS_ORIGINS
+origins = []
+
+if isinstance(raw_origins, str):
+    # Try parsing as JSON array (e.g. '["*"]' or '["http://localhost:5173"]')
+    try:
+        parsed = json.loads(raw_origins)
+        if isinstance(parsed, list):
+            origins = [str(item).strip() for item in parsed]
+        elif isinstance(parsed, str):
+            origins = [parsed.strip()]
+    except Exception:
+        # If not valid JSON, treat it as a comma-separated list of strings
+        origins = [orig.strip() for orig in raw_origins.split(",") if orig.strip()]
+elif isinstance(raw_origins, list):
+    origins = [str(orig).strip() for orig in raw_origins]
+else:
+    origins = ["*"] # Safe fallback
+
+# Ensure standard local development ports are always whitelisted
+if "http://localhost:5173" not in origins and "*" not in origins:
+    origins.append("http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,6 +1,6 @@
 import os
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Any
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Personal Expense Tracker API"
@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "SuperSecretRandom32ByteHashOrGenerateUsingOpenssl"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     ENVIRONMENT: str = "development"
-    CORS_ORIGINS: list[str] = [
+    CORS_ORIGINS: Any = [
         "http://localhost:5173",
         "http://localhost:3000",
         "https://personal-expense-tracker-frontend.vercel.app"
