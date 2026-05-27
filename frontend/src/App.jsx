@@ -175,6 +175,26 @@ function App() {
   // Save profile settings to backend
   const handleSaveProfile = async (values) => {
     setProfileSaving(true);
+    
+    if (token === 'offline_sandbox_token') {
+      setTimeout(() => {
+        const updated = {
+          name: values.name,
+          email: user?.email || 'sandbox@example.com',
+          currency: values.currency,
+          monthly_income: values.monthly_income,
+          safety_allocation: values.safety_allocation,
+          created_at: user?.created_at
+        };
+        setUser(updated);
+        setUserIncome(parseFloat(values.monthly_income) || 0);
+        setSafetyAllocation(parseFloat(values.safety_allocation) || 20);
+        message.success('✅ Profile saved locally in Sandbox Mode!');
+        setProfileSaving(false);
+      }, 500);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'PATCH',
@@ -201,6 +221,16 @@ function App() {
   // Change password
   const handleChangePassword = async (values) => {
     setPwdSaving(true);
+    
+    if (token === 'offline_sandbox_token') {
+      setTimeout(() => {
+        message.success('✅ Password updated locally in Sandbox Mode!');
+        passwordForm.resetFields();
+        setPwdSaving(false);
+      }, 500);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
         method: 'PATCH',
@@ -292,6 +322,32 @@ function App() {
     const text = e.target.value;
     if (text.length < 5) return;
     
+    if (token === 'offline_sandbox_token') {
+      // Local Mock NLP classification rules if in offline sandbox mode
+      const lower = text.toLowerCase();
+      let cat = "Others";
+      let conf = 0.65;
+      if (lower.includes("starbucks") || lower.includes("coffee") || lower.includes("mcdonalds") || lower.includes("food") || lower.includes("dinner")) {
+        cat = "Food & Dining";
+        conf = 0.96;
+      } else if (lower.includes("uber") || lower.includes("taxi") || lower.includes("ride") || lower.includes("gas") || lower.includes("cab")) {
+        cat = "Transport";
+        conf = 0.94;
+      } else if (lower.includes("netflix") || lower.includes("games") || lower.includes("movie") || lower.includes("spotify")) {
+        cat = "Entertainment";
+        conf = 0.89;
+      } else if (lower.includes("wifi") || lower.includes("bill") || lower.includes("electricity") || lower.includes("power")) {
+        cat = "Utilities";
+        conf = 0.92;
+      } else if (lower.includes("rent") || lower.includes("apartment")) {
+        cat = "Housing";
+        conf = 0.98;
+      }
+      setSuggestedCategory(cat);
+      setSuggestionConfidence(conf);
+      return;
+    }
+
     setMlLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/ml/suggest-category`, {
