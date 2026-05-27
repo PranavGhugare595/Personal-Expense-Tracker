@@ -14,9 +14,16 @@ class Settings(BaseSettings):
         "https://personal-expense-tracker-frontend.vercel.app"
     ]
 
+    # Email reminder settings
+    SMTP_EMAIL: Optional[str] = None           # Your Gmail address e.g. you@gmail.com
+    SMTP_APP_PASSWORD: Optional[str] = None    # Gmail App Password (16-char)
+    REMINDER_HOUR: int = 21                    # Hour to send reminder (24h, IST). Default = 9 PM
+    REMINDER_MINUTE: int = 0                   # Minute offset within the hour
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "ignore"
 
 settings = Settings()
+

@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.ml.predictor import predictor
 from app.core.config import settings
+from app.core.scheduler import start_scheduler, stop_scheduler
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -67,6 +68,20 @@ def startup_event():
             print(f"[INFO] Database contains {len(users)} users. Skipping auto-seeding.")
     except Exception as e:
         print(f"[WARNING] Database auto-seeding on startup failed: {e}")
+
+    # Start the daily expense reminder scheduler
+    try:
+        start_scheduler()
+    except Exception as e:
+        print(f"[WARNING] Failed to start reminder scheduler: {e}")
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    try:
+        stop_scheduler()
+    except Exception as e:
+        print(f"[WARNING] Failed to stop reminder scheduler cleanly: {e}")
 
 @app.get("/", tags=["General"])
 def read_root():
