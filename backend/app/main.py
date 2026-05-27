@@ -2,6 +2,7 @@ import os
 import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from app.api.v1.router import api_router
 from app.ml.predictor import predictor
@@ -83,14 +84,18 @@ def shutdown_event():
     except Exception as e:
         print(f"[WARNING] Failed to stop reminder scheduler cleanly: {e}")
 
-@app.get("/", tags=["General"])
+@app.get("/", response_class=HTMLResponse, tags=["General"])
 def read_root():
-    return {
-        "message": "Welcome to the Personal Expense Tracker ML Engine REST API Gateway.",
-        "docs_url": "/docs",
-        "health": "healthy",
-        "environment": settings.ENVIRONMENT
-    }
+    # Read the root index.html file from the project root directory
+    backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    index_path = os.path.join(backend_dir, "index.html")
+    if os.path.exists(index_path):
+        try:
+            with open(index_path, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read(), status_code=200)
+        except Exception as e:
+            return HTMLResponse(content=f"<h3>Error loading index.html: {e}</h3>", status_code=500)
+    return HTMLResponse(content="<h3>Error: index.html not found in project root directory!</h3>", status_code=404)
 
 @app.get("/health", tags=["General"])
 

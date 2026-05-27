@@ -6,9 +6,9 @@ echo   🚀 STARTING AI EXPENSE TRACKER PORTAL 🚀
 echo ===============================================================
 echo.
 
-:: 1. Launch the frontend interface in the default web browser
-echo [Launcher] Opening Frontend Website (index.html)...
-start "" "%~dp0index.html"
+:: 1. Launch the default web browser to open the local server
+echo [Launcher] Opening Frontend Website (http://localhost:8000)...
+start "" "http://localhost:8000"
 echo [Launcher] Frontend launched successfully!
 echo.
 
