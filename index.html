@@ -6,15 +6,16 @@
     <title>AI Expense Tracker Suite</title>
     <!-- Outfit Typography from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Ant Design CSS (v5 compiled custom skin elements) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.10/dayjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.2/antd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.2/reset.min.css" />
-    
-    <!-- React & Babel CDNs -->
+    <!-- React & Babel CDNs (Must be loaded FIRST) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.0/babel.min.js"></script>
+
+    <!-- Ant Design CSS & Day.js (Requires React to be loaded globally) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.10/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.2/antd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.15.2/reset.min.css" />
+
 
     <!-- Custom Premium Glassmorphic Styling System -->
     <style>
