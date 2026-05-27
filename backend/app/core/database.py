@@ -22,8 +22,8 @@ class DatabaseManager:
     def connect(self):
         """Attempts to connect to MongoDB; falls back to offline storage if it fails."""
         try:
-            # Short connection timeout (3 seconds) to prevent long hangs on startup
-            self.client = MongoClient(settings.MONGODB_URL, serverSelectionTimeoutMS=3000)
+            # Allow sufficient time (10 seconds) for remote MongoDB Atlas handshakes and DNS discovery
+            self.client = MongoClient(settings.MONGODB_URL, serverSelectionTimeoutMS=10000)
             # Trigger serverSelectionTimeoutMS if cluster is offline
             self.client.server_info() 
             self.db = self.client.get_database()
