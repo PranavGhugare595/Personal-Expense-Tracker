@@ -163,3 +163,153 @@ def send_reminder_email(to_email: str, user_name: str) -> bool:
     except Exception as e:
         logger.error(f"[EmailService] Failed to send reminder to {to_email}: {e}")
         return False
+
+
+def _build_welcome_html(user_name: str) -> str:
+    """Returns a styled HTML onboarding welcome email."""
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>Welcome to AI Expense Tracker</title>
+    </head>
+    <body style="margin:0;padding:0;background:#f0f2f8;font-family:'Segoe UI',Arial,sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f8;padding:40px 0;">
+        <tr>
+          <td align="center">
+            <table width="580" cellpadding="0" cellspacing="0"
+                   style="background:#ffffff;border-radius:20px;overflow:hidden;
+                          box-shadow:0 8px 32px rgba(108,99,255,0.12);">
+
+              <!-- Header -->
+              <tr>
+                <td style="background:linear-gradient(135deg,#6c63ff 0%,#e040fb 100%);
+                           padding:40px;text-align:center;">
+                  <div style="font-size:48px;margin-bottom:10px;">🎉</div>
+                  <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">
+                    Welcome to AI Expense Tracker!
+                  </h1>
+                  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:15px;">
+                    Your smart financial companion is ready
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="padding:40px 44px;">
+                  <h2 style="margin:0 0 12px;color:#1a1a2e;font-size:20px;">
+                    Hey {user_name}! 👋 You're all set.
+                  </h2>
+                  <p style="margin:0 0 28px;color:#555;font-size:15px;line-height:1.7;">
+                    Your account has been created successfully. Start logging your expenses
+                    and let our AI help you take control of your finances.
+                  </p>
+
+                  <!-- Feature highlights -->
+                  <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:30px;">
+                    <tr>
+                      <td style="padding:14px 18px;background:#f5f3ff;border-radius:12px;margin-bottom:10px;">
+                        <table width="100%"><tr>
+                          <td width="36" style="font-size:22px;">📊</td>
+                          <td>
+                            <strong style="color:#1a1a2e;font-size:14px;">Smart Dashboard</strong><br/>
+                            <span style="color:#666;font-size:13px;">Track all your expenses with real-time budget monitoring</span>
+                          </td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr><td style="height:8px;"></td></tr>
+                    <tr>
+                      <td style="padding:14px 18px;background:#f0fdf4;border-radius:12px;margin-bottom:10px;">
+                        <table width="100%"><tr>
+                          <td width="36" style="font-size:22px;">🤖</td>
+                          <td>
+                            <strong style="color:#1a1a2e;font-size:14px;">AI-Powered Insights</strong><br/>
+                            <span style="color:#666;font-size:13px;">ML forecasts predict your spending for next 3 months</span>
+                          </td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                    <tr><td style="height:8px;"></td></tr>
+                    <tr>
+                      <td style="padding:14px 18px;background:#fff7ed;border-radius:12px;">
+                        <table width="100%"><tr>
+                          <td width="36" style="font-size:22px;">📧</td>
+                          <td>
+                            <strong style="color:#1a1a2e;font-size:14px;">Daily Reminders</strong><br/>
+                            <span style="color:#666;font-size:13px;">Get email nudges every evening if you miss logging expenses</span>
+                          </td>
+                        </tr></table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- CTA -->
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center">
+                        <a href="https://personal-expense-tracker-ten-phi.vercel.app"
+                           style="display:inline-block;background:linear-gradient(135deg,#6c63ff,#e040fb);
+                                  color:#ffffff;text-decoration:none;padding:15px 44px;
+                                  border-radius:50px;font-size:15px;font-weight:600;
+                                  box-shadow:0 4px 16px rgba(108,99,255,0.35);">
+                          🚀 &nbsp; Open My Tracker
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <hr style="border:none;border-top:1px solid #eee;margin:32px 0;" />
+                  <p style="margin:0;color:#999;font-size:13px;text-align:center;line-height:1.8;">
+                    You'll receive a daily reminder at 9 PM if you forget to log expenses.<br/>
+                    © 2026 AI Expense Tracker
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    """
+
+
+def send_welcome_email(to_email: str, user_name: str) -> bool:
+    """
+    Sends a welcome / onboarding email to a newly registered user.
+    Returns True on success, False on failure.
+    """
+    if not settings.SMTP_EMAIL or not settings.SMTP_APP_PASSWORD:
+        logger.warning("[EmailService] SMTP not configured — skipping welcome email.")
+        return False
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"🎉 Welcome to AI Expense Tracker, {user_name}!"
+        msg["From"] = f"AI Expense Tracker <{settings.SMTP_EMAIL}>"
+        msg["To"] = to_email
+
+        plain_text = (
+            f"Hi {user_name},\n\n"
+            f"Welcome to AI Expense Tracker! Your account is ready.\n"
+            f"Start tracking your expenses at:\n"
+            f"https://personal-expense-tracker-ten-phi.vercel.app\n\n"
+            f"— AI Expense Tracker Team"
+        )
+        msg.attach(MIMEText(plain_text, "plain"))
+        msg.attach(MIMEText(_build_welcome_html(user_name), "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(settings.SMTP_EMAIL, settings.SMTP_APP_PASSWORD)
+            server.sendmail(settings.SMTP_EMAIL, to_email, msg.as_string())
+
+        logger.info(f"[EmailService] Welcome email sent to {to_email}")
+        return True
+
+    except Exception as e:
+        logger.error(f"[EmailService] Failed to send welcome email to {to_email}: {e}")
+        return False

@@ -3,15 +3,15 @@ import { Layout, Menu, Input, Card, Button, Form, Typography, Space, Row, Col, A
 import { 
   LineChartOutlined, 
   FormOutlined, 
-  PieChartOutlined, 
   SecurityScanOutlined, 
   UserOutlined, 
   LockOutlined, 
-  PlusOutlined, 
   DeleteOutlined, 
   CheckCircleOutlined,
-  AlertOutlined,
-  RocketOutlined 
+  RocketOutlined,
+  SettingOutlined,
+  SaveOutlined,
+  KeyOutlined
 } from '@ant-design/icons';
 
 const { Header, Content, Sider } = Layout;
@@ -31,9 +31,15 @@ function App() {
   const [forecasts, setForecasts] = useState([]);
   const [insights, setInsights] = useState(null);
 
-  // Custom Income & Safety Target States
-  const [userIncome, setUserIncome] = useState(parseFloat(localStorage.getItem('user_income')) || 4000.0);
-  const [safetyAllocation, setSafetyAllocation] = useState(parseFloat(localStorage.getItem('safety_allocation')) || 20.0);
+  // Income & Safety — driven by backend user profile (not localStorage)
+  const [userIncome, setUserIncome] = useState(0.0);
+  const [safetyAllocation, setSafetyAllocation] = useState(20.0);
+
+  // Profile editing state
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [profileForm] = Form.useForm();
+  const [passwordForm] = Form.useForm();
   
   // Table Loading states
   const [loading, setLoading] = useState(false);
@@ -144,12 +150,77 @@ function App() {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        // Sync income & savings from DB (per-user, not localStorage)
+        const income = parseFloat(data.monthly_income) || 0.0;
+        const safety = parseFloat(data.safety_allocation) || 20.0;
+        setUserIncome(income);
+        setSafetyAllocation(safety);
+        // Pre-fill profile form
+        profileForm.setFieldsValue({
+          name: data.name,
+          currency: data.currency,
+          monthly_income: income,
+          safety_allocation: safety,
+        });
       } else if (res.status === 401 || res.status === 403) {
         handleLogout();
         message.error("Session expired. Please sign in again.");
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  // Save profile settings to backend
+  const handleSaveProfile = async (values) => {
+    setProfileSaving(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(values),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setUser(updated);
+        setUserIncome(parseFloat(updated.monthly_income) || 0);
+        setSafetyAllocation(parseFloat(updated.safety_allocation) || 20);
+        message.success('✅ Profile saved successfully!');
+      } else {
+        const err = await res.json();
+        message.error(err.detail || 'Failed to save profile.');
+      }
+    } catch (e) {
+      message.error('Could not reach the server.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // Change password
+  const handleChangePassword = async (values) => {
+    setPwdSaving(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          current_password: values.current_password,
+          new_password: values.new_password,
+        }),
+      });
+      if (res.ok) {
+        message.success('✅ Password changed! Please log in again.');
+        passwordForm.resetFields();
+        handleLogout();
+      } else {
+        const err = await res.json();
+        message.error(err.detail || 'Failed to change password.');
+      }
+    } catch (e) {
+      message.error('Could not reach the server.');
+    } finally {
+      setPwdSaving(false);
     }
   };
 
@@ -518,6 +589,7 @@ function App() {
           <Menu.Item key="dashboard" icon={<LineChartOutlined />}>Dashboard</Menu.Item>
           <Menu.Item key="log" icon={<FormOutlined />}>Log Expense</Menu.Item>
           <Menu.Item key="insights" icon={<SecurityScanOutlined />}>AI Predictor Room</Menu.Item>
+          <Menu.Item key="profile" icon={<SettingOutlined />}>Profile & Settings</Menu.Item>
         </Menu>
         <div style={{ position: 'absolute', bottom: 20, width: '100%', padding: '0 20px', textAlign: 'center' }}>
           <Button type="primary" size="small" danger onClick={handleLogout} block={!collapsed}>
@@ -615,7 +687,6 @@ function App() {
                               onChange={(e) => {
                                 const val = parseFloat(e.target.value) || 0;
                                 setUserIncome(val);
-                                localStorage.setItem('user_income', val);
                               }}
                               className="glass-input" 
                               style={{ width: '100%' }}
@@ -636,7 +707,6 @@ function App() {
                               value={safetyAllocation} 
                               onChange={(val) => {
                                 setSafetyAllocation(val);
-                                localStorage.setItem('safety_allocation', val);
                               }}
                               tooltip={{ formatter: (v) => `${v}%` }}
                               marks={{
@@ -873,6 +943,132 @@ function App() {
                 </Col>
               </Row>
             </Space>
+          )}
+
+          {/* TAB: PROFILE & SETTINGS */}
+          {currentTab === 'profile' && (
+            <Row gutter={[24, 24]}>
+
+              {/* Account Info Card */}
+              <Col xs={24} md={8}>
+                <Card className="glass-panel" bordered={false} style={{ textAlign: 'center', padding: '10px 0' }}>
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: 'var(--neon-glow)' }}>
+                    <UserOutlined style={{ fontSize: 36, color: '#fff' }} />
+                  </div>
+                  <Title level={4} style={{ color: 'var(--text-primary)', margin: '0 0 4px' }}>{user?.name || 'User'}</Title>
+                  <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{user?.email}</Text>
+                  <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ background: 'rgba(108,99,255,0.08)', borderRadius: 10, padding: '10px 16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Currency</Text>
+                      <Text strong style={{ color: 'var(--text-primary)' }}>{user?.currency || 'INR'}</Text>
+                    </div>
+                    <div style={{ background: 'rgba(108,99,255,0.08)', borderRadius: 10, padding: '10px 16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Monthly Income</Text>
+                      <Text strong style={{ color: '#10b981' }}>₹{parseFloat(user?.monthly_income || 0).toLocaleString()}</Text>
+                    </div>
+                    <div style={{ background: 'rgba(108,99,255,0.08)', borderRadius: 10, padding: '10px 16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Savings Target</Text>
+                      <Text strong style={{ color: '#6c63ff' }}>{user?.safety_allocation || 20}%</Text>
+                    </div>
+                    <div style={{ background: 'rgba(108,99,255,0.08)', borderRadius: 10, padding: '10px 16px', display: 'flex', justifyContent: 'space-between' }}>
+                      <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Member Since</Text>
+                      <Text strong style={{ color: 'var(--text-primary)' }}>
+                        {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—'}
+                      </Text>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+
+              <Col xs={24} md={16}>
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+
+                  {/* Profile Update Form */}
+                  <Card
+                    className="glass-panel"
+                    bordered={false}
+                    title={<span style={{ color: 'var(--text-primary)' }}><SettingOutlined /> &nbsp;Edit Profile & Financial Settings</span>}
+                  >
+                    <Form form={profileForm} layout="vertical" onFinish={handleSaveProfile}>
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item name="name" label={<span style={{ color: 'var(--text-primary)' }}>Full Name</span>} rules={[{ required: true, min: 2 }]}>
+                            <Input prefix={<UserOutlined style={{ color: 'var(--text-secondary)' }} />} className="glass-input" placeholder="Your name" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item name="currency" label={<span style={{ color: 'var(--text-primary)' }}>Currency</span>}>
+                            <Select className="glass-select" options={[
+                              { value: 'INR', label: '₹ INR — Indian Rupee' },
+                              { value: 'USD', label: '$ USD — US Dollar' },
+                              { value: 'EUR', label: '€ EUR — Euro' },
+                              { value: 'GBP', label: '£ GBP — British Pound' },
+                            ]} />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item name="monthly_income" label={<span style={{ color: 'var(--text-primary)' }}>Monthly Income (₹)</span>}>
+                            <Input type="number" prefix="₹" className="glass-input" placeholder="e.g. 50000" />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item name="safety_allocation" label={<span style={{ color: 'var(--text-primary)' }}>Safety Savings Target (%)</span>}>
+                            <Input type="number" suffix="%" className="glass-input" min={0} max={100} placeholder="e.g. 20" />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Button type="primary" htmlType="submit" className="btn-premium-neon" icon={<SaveOutlined />} loading={profileSaving}>
+                        Save Profile
+                      </Button>
+                    </Form>
+                  </Card>
+
+                  {/* Change Password Form */}
+                  <Card
+                    className="glass-panel"
+                    bordered={false}
+                    title={<span style={{ color: 'var(--text-primary)' }}><KeyOutlined /> &nbsp;Change Password</span>}
+                  >
+                    <Form form={passwordForm} layout="vertical" onFinish={handleChangePassword}>
+                      <Form.Item
+                        name="current_password"
+                        label={<span style={{ color: 'var(--text-primary)' }}>Current Password</span>}
+                        rules={[{ required: true, message: 'Please enter your current password' }]}
+                      >
+                        <Input.Password prefix={<LockOutlined style={{ color: 'var(--text-secondary)' }} />} className="glass-input" placeholder="Current password" />
+                      </Form.Item>
+                      <Form.Item
+                        name="new_password"
+                        label={<span style={{ color: 'var(--text-primary)' }}>New Password</span>}
+                        rules={[{ required: true, min: 6, message: 'Minimum 6 characters' }]}
+                      >
+                        <Input.Password prefix={<LockOutlined style={{ color: 'var(--text-secondary)' }} />} className="glass-input" placeholder="New password (min 6 chars)" />
+                      </Form.Item>
+                      <Form.Item
+                        name="confirm_password"
+                        label={<span style={{ color: 'var(--text-primary)' }}>Confirm New Password</span>}
+                        dependencies={['new_password']}
+                        rules={[{ required: true }, ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('new_password') === value) return Promise.resolve();
+                            return Promise.reject(new Error('Passwords do not match!'));
+                          }
+                        })]}
+                      >
+                        <Input.Password prefix={<LockOutlined style={{ color: 'var(--text-secondary)' }} />} className="glass-input" placeholder="Re-enter new password" />
+                      </Form.Item>
+                      <Button type="primary" htmlType="submit" danger icon={<KeyOutlined />} loading={pwdSaving}>
+                        Update Password
+                      </Button>
+                    </Form>
+                  </Card>
+
+                </Space>
+              </Col>
+
+            </Row>
           )}
 
         </Content>
