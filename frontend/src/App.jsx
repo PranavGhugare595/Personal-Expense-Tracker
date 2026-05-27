@@ -11,7 +11,8 @@ import {
   RocketOutlined,
   SettingOutlined,
   SaveOutlined,
-  KeyOutlined
+  KeyOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
 
 const { Header, Content, Sider } = Layout;
@@ -591,10 +592,32 @@ function App() {
           <Menu.Item key="insights" icon={<SecurityScanOutlined />}>AI Predictor Room</Menu.Item>
           <Menu.Item key="profile" icon={<SettingOutlined />}>Profile & Settings</Menu.Item>
         </Menu>
-        <div style={{ position: 'absolute', bottom: 20, width: '100%', padding: '0 20px', textAlign: 'center' }}>
-          <Button type="primary" size="small" danger onClick={handleLogout} block={!collapsed}>
-            {collapsed ? 'X' : 'Secure Exit'}
-          </Button>
+
+        {/* Logout button — pinned to bottom of sidebar */}
+        <div style={{ position: 'absolute', bottom: 24, width: '100%', padding: '0 16px' }}>
+          <div
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              gap: 10,
+              padding: collapsed ? '12px 0' : '12px 16px',
+              borderRadius: 12,
+              cursor: 'pointer',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              color: '#ef4444',
+              fontWeight: 600,
+              fontSize: 14,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+          >
+            <LogoutOutlined style={{ fontSize: 16, color: '#ef4444' }} />
+            {!collapsed && <span>Logout</span>}
+          </div>
         </div>
       </Sider>
 
@@ -602,8 +625,25 @@ function App() {
         <Header style={{ background: 'transparent', padding: '0 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 70 }}>
           <Title level={4} style={{ color: 'var(--text-primary)', margin: 0 }}>Active Portal: <span className="glow-title" style={{ textTransform: 'capitalize' }}>{currentTab}</span></Title>
           <Space>
-            <Tag color="cyan"><UserOutlined /> {user?.name || "Premium User"}</Tag>
+            <Tag color="purple" style={{ padding: '4px 12px', fontSize: 13, borderRadius: 20 }}>
+              <UserOutlined /> &nbsp;{user?.name || 'Premium User'}
+            </Tag>
             {token === 'offline_sandbox_token' && <Tag color="orange">Offline Sandbox Mode</Tag>}
+            <Button
+              type="default"
+              danger
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+              style={{
+                borderRadius: 20,
+                fontWeight: 600,
+                border: '1px solid rgba(239,68,68,0.4)',
+                color: '#ef4444',
+                background: 'rgba(239,68,68,0.06)',
+              }}
+            >
+              Logout
+            </Button>
           </Space>
         </Header>
 
