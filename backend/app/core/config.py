@@ -13,6 +13,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "https://personal-expense-tracker-frontend.vercel.app"
     ]
+    FIREBASE_PROJECT_ID: Optional[str] = None
+
 
     # Email reminder settings
     SMTP_EMAIL: Optional[str] = None           # Your Gmail address e.g. you@gmail.com

@@ -14,11 +14,22 @@ import {
   KeyOutlined,
   LogoutOutlined
 } from '@ant-design/icons';
+import { auth } from './firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  updateProfile, 
+  signOut, 
+  updatePassword, 
+  EmailAuthProvider, 
+  reauthenticateWithCredential 
+} from 'firebase/auth';
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
 const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1`;
+
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -57,6 +68,29 @@ function App() {
   const [suggestionConfidence, setSuggestionConfidence] = useState(null);
   const [searchValue, setSearchValue] = useState('');
 
+  // Subscribe to Firebase Auth state updates
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          localStorage.setItem('jwt_token', idToken);
+          setToken(idToken);
+        } catch (err) {
+          console.error("Error getting Firebase ID token:", err);
+        }
+      } else {
+        const currentToken = localStorage.getItem('jwt_token');
+        if (currentToken !== 'offline_sandbox_token') {
+          localStorage.removeItem('jwt_token');
+          setToken(null);
+          setUser(null);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Auto load initial states on user login
   useEffect(() => {
     if (token) {
@@ -81,27 +115,27 @@ function App() {
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('jwt_token', data.access_token);
-        setToken(data.access_token);
-        message.success("Authenticated successfully!");
-      } else {
-        message.error(data.detail || "Authentication credentials rejected.");
-      }
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      message.success("Authenticated successfully!");
     } catch (err) {
-      // Offline fallback login for easy local demonstration without backend
-      console.warn("Backend not detected, activating local sandbox environment.");
-      localStorage.setItem('jwt_token', 'offline_sandbox_token');
-      setToken('offline_sandbox_token');
-      setUser({ name: "Jane Doe (Offline Sandbox)", email: values.email, currency: "USD" });
-      loadOfflineSandboxData();
-      message.warning("FastAPI offline: Activated Local Browser Sandbox Sandbox.");
+      console.warn("Firebase authentication failed, checking offline Sandbox fallback:", err);
+      const isConfigError = 
+        err.code === "auth/api-key-not-valid" ||
+        err.code === "auth/invalid-api-key" ||
+        err.code === "auth/network-request-failed" ||
+        err.message?.includes("api-key-not-valid") ||
+        err.message?.includes("apiKey") ||
+        err.message?.includes("API key");
+        
+      if (isConfigError) {
+        localStorage.setItem('jwt_token', 'offline_sandbox_token');
+        setToken('offline_sandbox_token');
+        setUser({ name: "Jane Doe (Offline Sandbox)", email: values.email, currency: "USD" });
+        loadOfflineSandboxData();
+        message.warning("Firebase Offline/Unconfigured: Activated Local Browser Sandbox.");
+      } else {
+        message.error(`Authentication rejected: ${err.message || err}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -110,27 +144,48 @@ function App() {
   const handleRegister = async (values) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, currency: 'USD' }),
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      await updateProfile(userCredential.user, {
+        displayName: values.name
       });
-      const data = await response.json();
-      if (response.ok) {
-        message.success("Account registered! Please sign in.");
-        setIsRegistering(false);
-        loginForm.setFieldsValue({ email: values.email });
-      } else {
-        message.error(data.detail || "Registration failed.");
-      }
+      // Force trigger state sync
+      const idToken = await userCredential.user.getIdToken(true);
+      localStorage.setItem('jwt_token', idToken);
+      setToken(idToken);
+      message.success("Account registered successfully!");
+      setIsRegistering(false);
     } catch (err) {
-      message.error("Could not reach backend servers to compile registration.");
+      console.warn("Firebase registration failed, checking offline Sandbox fallback:", err);
+      const isConfigError = 
+        err.code === "auth/api-key-not-valid" ||
+        err.code === "auth/invalid-api-key" ||
+        err.code === "auth/network-request-failed" ||
+        err.message?.includes("api-key-not-valid") ||
+        err.message?.includes("apiKey") ||
+        err.message?.includes("API key");
+        
+      if (isConfigError) {
+        localStorage.setItem('jwt_token', 'offline_sandbox_token');
+        setToken('offline_sandbox_token');
+        setUser({ name: values.name + " (Offline Sandbox)", email: values.email, currency: "USD" });
+        loadOfflineSandboxData();
+        message.warning("Firebase Offline/Unconfigured: Activated Local Browser Sandbox.");
+        setIsRegistering(false);
+      } else {
+        message.error(`Registration failed: ${err.message || err}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error(e);
+    }
     localStorage.removeItem('jwt_token');
     setToken(null);
     setUser(null);
@@ -140,6 +195,7 @@ function App() {
     setInsights(null);
     message.info("Logged out safely.");
   };
+
 
   // Fetch functions with Auth Headers
   const fetchUserProfile = async () => {
@@ -232,28 +288,25 @@ function App() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          current_password: values.current_password,
-          new_password: values.new_password,
-        }),
-      });
-      if (res.ok) {
-        message.success('✅ Password changed! Please log in again.');
+      const user = auth.currentUser;
+      if (user) {
+        // Re-authenticate user first
+        const credential = EmailAuthProvider.credential(user.email, values.current_password);
+        await reauthenticateWithCredential(user, credential);
+        // Update password
+        await updatePassword(user, values.new_password);
+        message.success('✅ Password changed in Firebase successfully!');
         passwordForm.resetFields();
-        handleLogout();
       } else {
-        const err = await res.json();
-        message.error(err.detail || 'Failed to change password.');
+        message.error("No active authenticated session found.");
       }
     } catch (e) {
-      message.error('Could not reach the server.');
+      message.error(`Failed to change password: ${e.message || e}`);
     } finally {
       setPwdSaving(false);
     }
   };
+
 
   const fetchExpenses = async () => {
     if (token === 'offline_sandbox_token') return;

@@ -2,6 +2,7 @@ import os
 import json
 import logging
 from pymongo import MongoClient
+from bson import ObjectId
 from app.core.config import settings
 
 logger = logging.getLogger("app.database")
@@ -55,11 +56,59 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Failed to persist offline database data: {e}")
 
+    # --- Helper Method to Convert string _id to ObjectId for MongoDB ---
+    def _prepare_query(self, query: dict) -> dict:
+        """Recursively converts string _id values to MongoDB ObjectIds."""
+        if not query:
+            return query
+        prepared = {}
+        for k, v in query.items():
+            if k == "_id":
+                if isinstance(v, str):
+                    try:
+                        prepared[k] = ObjectId(v)
+                    except Exception:
+                        prepared[k] = v
+                elif isinstance(v, dict):
+                    prepared_sub = {}
+                    for sk, sv in v.items():
+                        if isinstance(sv, list):
+                            new_list = []
+                            for item in sv:
+                                if isinstance(item, str):
+                                    try:
+                                        new_list.append(ObjectId(item))
+                                    except Exception:
+                                        new_list.append(item)
+                                else:
+                                    new_list.append(item)
+                            prepared_sub[sk] = new_list
+                        elif isinstance(sv, str):
+                            try:
+                                prepared_sub[sk] = ObjectId(sv)
+                            except Exception:
+                                prepared_sub[sk] = sv
+                        else:
+                            prepared_sub[sk] = sv
+                    prepared[k] = prepared_sub
+                else:
+                    prepared[k] = v
+            elif isinstance(v, dict):
+                prepared[k] = self._prepare_query(v)
+            else:
+                prepared[k] = v
+        return prepared
+
     # --- Standard Generic CRUD Wrappers Supporting Both MongoDB & Mock Database ---
     
     def find_one(self, collection_name: str, query: dict) -> dict:
         if not self.is_fallback:
-            return self.db[collection_name].find_one(query)
+            prepared_query = self._prepare_query(query)
+            res = self.db[collection_name].find_one(prepared_query)
+            # Ensure return has a string _id representation
+            if res and "_id" in res:
+                res["_id"] = str(res["_id"])
+            return res
         
         # Mock search logic
         for item_id, item in self.mock_db.get(collection_name, {}).items():
@@ -77,7 +126,12 @@ class DatabaseManager:
 
     def find_many(self, collection_name: str, query: dict) -> list:
         if not self.is_fallback:
-            return list(self.db[collection_name].find(query))
+            prepared_query = self._prepare_query(query)
+            results = list(self.db[collection_name].find(prepared_query))
+            for res in results:
+                if "_id" in res:
+                    res["_id"] = str(res["_id"])
+            return results
         
         results = []
         for item_id, item in self.mock_db.get(collection_name, {}).items():
@@ -94,7 +148,16 @@ class DatabaseManager:
 
     def insert_one(self, collection_name: str, document: dict) -> str:
         if not self.is_fallback:
-            res = self.db[collection_name].insert_one(document)
+            # Strip string _id from document if it exists to let MongoDB auto-generate ObjectId
+            doc_to_insert = document.copy()
+            if "_id" in doc_to_insert:
+                # If it's a string, try converting to ObjectId, otherwise pop
+                if isinstance(doc_to_insert["_id"], str):
+                    try:
+                        doc_to_insert["_id"] = ObjectId(doc_to_insert["_id"])
+                    except Exception:
+                        doc_to_insert.pop("_id")
+            res = self.db[collection_name].insert_one(doc_to_insert)
             # Add string ID representation
             document["_id"] = str(res.inserted_id)
             return document["_id"]
@@ -111,7 +174,8 @@ class DatabaseManager:
 
     def update_one(self, collection_name: str, query: dict, update_data: dict) -> bool:
         if not self.is_fallback:
-            res = self.db[collection_name].update_one(query, {"$set": update_data})
+            prepared_query = self._prepare_query(query)
+            res = self.db[collection_name].update_one(prepared_query, {"$set": update_data})
             return res.modified_count > 0
         
         # Offline update logic
@@ -125,7 +189,8 @@ class DatabaseManager:
 
     def delete_one(self, collection_name: str, query: dict) -> bool:
         if not self.is_fallback:
-            res = self.db[collection_name].delete_one(query)
+            prepared_query = self._prepare_query(query)
+            res = self.db[collection_name].delete_one(prepared_query)
             return res.deleted_count > 0
         
         # Offline delete logic
