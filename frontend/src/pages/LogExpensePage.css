@@ -1,0 +1,191 @@
+/* ===== LOG EXPENSE LAYOUT ===== */
+.log-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ===== EXPENSE FORM ===== */
+.expense-form-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-light);
+}
+
+.expense-form-card h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.expense-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.expense-form .form-group {
+  gap: 0.35rem;
+}
+
+.expense-form .form-label {
+  font-size: 0.8rem;
+}
+
+.expense-form .form-input,
+.expense-form .form-select {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--bg-input);
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--transition-normal);
+}
+
+.expense-form .form-input:focus,
+.expense-form .form-select:focus {
+  border-color: var(--border-input-focus);
+  box-shadow: var(--shadow-input-focus);
+}
+
+.expense-form .form-select {
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 2.2rem;
+}
+
+.log-submit-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--gradient-primary);
+  color: white;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  box-shadow: var(--shadow-button);
+  margin-top: 0.5rem;
+}
+
+.log-submit-btn:hover {
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-button-hover);
+  transform: translateY(-1px);
+}
+
+.log-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== AI ASSIST PANEL ===== */
+.ai-assist-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-light);
+  min-height: 300px;
+}
+
+.ai-assist-card h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.ai-assist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ai-assist-empty svg {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
+.ai-assist-empty p {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.ai-suggestion {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-suggestion-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.ai-suggestion-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ai-suggestion-value:hover {
+  transform: scale(1.03);
+}
+
+.ai-suggestion-value.food { background: #fce7f3; color: #be185d; }
+.ai-suggestion-value.transport { background: #e0e7ff; color: #4338ca; }
+.ai-suggestion-value.utilities { background: #d1fae5; color: #065f46; }
+.ai-suggestion-value.entertainment { background: #fef3c7; color: #92400e; }
+.ai-suggestion-value.shopping { background: #ede9fe; color: #6d28d9; }
+.ai-suggestion-value.healthcare { background: #fce7f3; color: #9d174d; }
+.ai-suggestion-value.education { background: #dbeafe; color: #1e40af; }
+.ai-suggestion-value.rent { background: #f3e8ff; color: #7c3aed; }
+.ai-suggestion-value.groceries { background: #d1fae5; color: #047857; }
+.ai-suggestion-value.travel { background: #cffafe; color: #0e7490; }
+.ai-suggestion-value.subscriptions { background: #e0e7ff; color: #3730a3; }
+.ai-suggestion-value.other { background: #f3f4f6; color: #4b5563; }
+
+.ai-suggestion-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .log-grid {
+    grid-template-columns: 1fr;
+  }
+}
