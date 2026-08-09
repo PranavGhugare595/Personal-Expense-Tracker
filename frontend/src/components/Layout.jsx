@@ -1,17 +1,25 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Receipt, UserCog, LogOut, ShieldCheck, User } from 'lucide-react';
+import { LayoutDashboard, Receipt, UserCog, LogOut, ShieldCheck, User, BarChart2, Wallet, BrainCircuit, FileText } from 'lucide-react';
 import './Layout.css';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/log-expense', label: 'Log Expense', icon: Receipt },
+  { to: '/analytics', label: 'Analytics', icon: BarChart2 },
+  { to: '/budget-planner', label: 'Budget Planner', icon: Wallet },
+  { to: '/advisor', label: 'AI Advisor', icon: BrainCircuit },
+  { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/profile', label: 'Profile & Settings', icon: UserCog },
 ];
 
 const pageNames = {
   '/dashboard': 'Dashboard',
   '/log-expense': 'Log',
+  '/analytics': 'Analytics',
+  '/budget-planner': 'Budget Planner',
+  '/advisor': 'AI Advisor',
+  '/reports': 'Reports',
   '/profile': 'Profile',
 };
 
@@ -82,10 +90,6 @@ export default function Layout() {
             <User />
             {user.full_name || 'User'}
           </div>
-          <button className="topbar-logout" onClick={handleLogout}>
-            <LogOut />
-            Logout
-          </button>
         </div>
       </header>
 

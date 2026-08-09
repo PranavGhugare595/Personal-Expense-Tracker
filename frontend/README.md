@@ -1,16 +1,74 @@
-# React + Vite
+# Personal Expense Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack expense management application that helps users track daily expenses, monitor budgets, receive email reminders, and manage personal finances efficiently.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* User Registration and Login
+* JWT Authentication
+* Expense Management
+* Budget Tracking
+* Email Reminders
+* Profile Management
+* Responsive User Interface
+* Secure Backend APIs
+* Supabase PostgreSQL Database Integration
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
 
-## Expanding the ESLint configuration
+* React.js
+* Vite
+* React Router DOM
+* Axios
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Backend
+
+* FastAPI
+* SQLAlchemy
+* AsyncPG
+* JWT Authentication
+
+### Database
+
+* Supabase PostgreSQL
+
+### Other Tools
+
+* Git
+* GitHub
+* Vercel
+* SMTP Email Service
+
+## Project Structure
+
+personal-expense-tracker/
+├── frontend/
+├── backend/
+└── README.md
+
+## Installation
+
+### Frontend
+
+npm install
+
+npm run dev
+
+### Backend
+
+pip install -r requirements.txt
+
+uvicorn app.main:app --reload
+
+## Future Improvements
+
+* AI Expense Analysis
+* Expense Prediction
+* PDF Reports
+* Multi-Currency Support
+
+## Author
+
+Pranav Ghugare

@@ -6,6 +6,10 @@ import Layout from './components/Layout';
 import DashboardPage from './pages/DashboardPage';
 import LogExpensePage from './pages/LogExpensePage';
 import ProfilePage from './pages/ProfilePage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import BudgetPage from './pages/BudgetPage';
+import AdvisorPage from './pages/AdvisorPage';
+import ReportsPage from './pages/ReportsPage';
 import './index.css';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -24,6 +28,10 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/log-expense" element={<LogExpensePage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/budget-planner" element={<BudgetPage />} />
+            <Route path="/advisor" element={<AdvisorPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

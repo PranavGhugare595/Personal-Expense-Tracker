@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, status, Depends, Query
@@ -8,6 +9,7 @@ from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import ExpenseCreate, ExpenseResponse, ExpenseListResponse
 from app.models.sql_models import User, Expense
+from app.core.email_service import send_savings_warning_email
 
 router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
@@ -30,6 +32,29 @@ async def create_expense(
     db.add(expense)
     await db.commit()
     await db.refresh(expense)
+
+    # ──── Budget Breach Check ────
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Gross expenditure this month (including the new expense)
+    result = await db.execute(
+        select(func.coalesce(func.sum(Expense.amount), 0.0)).where(
+            Expense.user_id == user.id,
+            Expense.date >= month_start,
+        )
+    )
+    current_total = float(result.scalar() or 0.0)
+    
+    income = user.monthly_income or 0
+    savings_pct = user.savings_target or 20
+    savings_amount = (income * savings_pct) / 100
+    budget_limit = income - savings_amount
+
+    if budget_limit > 0:
+        previous_total = current_total - expense.amount
+        if current_total > budget_limit and previous_total <= budget_limit:
+            # Threshold crossed just now. Send warning email as a background task.
+            asyncio.create_task(send_savings_warning_email(user.email, user.full_name))
 
     return ExpenseResponse(
         id=expense.id,

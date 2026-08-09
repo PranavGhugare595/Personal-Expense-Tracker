@@ -34,6 +34,7 @@ class User(Base):
 
     # Relationship
     expenses: Mapped[list["Expense"]] = relationship("Expense", back_populates="user", cascade="all, delete-orphan")
+    category_budgets: Mapped[list["CategoryBudget"]] = relationship("CategoryBudget", back_populates="user", cascade="all, delete-orphan")
 
 
 class Expense(Base):
@@ -51,3 +52,18 @@ class Expense(Base):
 
     # Relationship
     user: Mapped["User"] = relationship("User", back_populates="expenses")
+
+
+class CategoryBudget(Base):
+    """CategoryBudgets table — stores custom budgets for categories per user."""
+    __tablename__ = "category_budgets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    # Relationship
+    user: Mapped["User"] = relationship("User", back_populates="category_budgets")

@@ -35,19 +35,22 @@ export default function DashboardPage() {
   const [savingsPct, setSavingsPct] = useState(20);
   const [currency, setCurrency] = useState('INR');
   const [loading, setLoading] = useState(true);
+  const [budgets, setBudgets] = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
-      const [statsRes, expensesRes, profileRes] = await Promise.all([
+      const [statsRes, expensesRes, profileRes, budgetRes] = await Promise.all([
         api.get('/api/v1/dashboard/stats'),
         api.get('/api/v1/expenses?limit=10'),
         api.get('/api/v1/profile'),
+        api.get('/api/v1/budget'),
       ]);
       setStats(statsRes.data);
       setExpenses(expensesRes.data.expenses || []);
       setIncome(profileRes.data.monthly_income || 0);
       setSavingsPct(profileRes.data.savings_target || 20);
       setCurrency(profileRes.data.currency || 'INR');
+      setBudgets(budgetRes.data || []);
     } catch (err) {
       console.error('Failed to load dashboard:', err);
     } finally {
@@ -89,6 +92,11 @@ export default function DashboardPage() {
 
   const sliderLabels = [10, 20, 30, 40, 50];
 
+  const totalBudget = budgets.reduce((acc, curr) => acc + curr.budget_amount, 0);
+  const totalBudgetSpent = budgets.reduce((acc, curr) => acc + curr.spent_amount, 0);
+  const realBudgetUsedPct = totalBudget > 0 ? (totalBudgetSpent / totalBudget) * 100 : 0;
+  const remainingBudget = totalBudget - totalBudgetSpent;
+
   if (loading) {
     return (
       <div className="no-data" style={{ marginTop: '3rem' }}>
@@ -104,7 +112,7 @@ export default function DashboardPage() {
         <div className="stat-card">
           <div className="stat-card-label">Gross Expenditure</div>
           <div className="stat-card-value negative">
-            -{formatCurrency(Math.abs(stats.gross_expenditure), currency)}
+            {formatCurrency(Math.abs(stats.gross_expenditure), currency)}
           </div>
         </div>
         <div className="stat-card">
@@ -122,17 +130,20 @@ export default function DashboardPage() {
         <div className="stat-card budget-card">
           <div className="budget-header">
             <div>
-              <div className="stat-card-label">Budget Allocation Limit</div>
+              <div className="stat-card-label">Overall Budget Usage</div>
               <div className="stat-card-value" style={{ fontSize: '1.1rem' }}>
-                {stats.budget_used_pct.toFixed(1)}% Used
+                {totalBudget > 0 ? `${realBudgetUsedPct.toFixed(1)}% Used` : 'No Budgets Set'}
               </div>
             </div>
-            <div className="budget-percentage">{stats.budget_used_pct.toFixed(0)}%</div>
+            {totalBudget > 0 && <div className="budget-percentage">{formatCurrency(remainingBudget, currency)} left</div>}
           </div>
           <div className="budget-bar">
             <div
               className="budget-bar-fill"
-              style={{ width: `${Math.min(stats.budget_used_pct, 100)}%` }}
+              style={{ 
+                width: `${Math.min(realBudgetUsedPct, 100)}%`,
+                background: realBudgetUsedPct > 100 ? '#ef4444' : realBudgetUsedPct > 80 ? '#f59e0b' : '#10b981'
+              }}
             />
           </div>
         </div>
@@ -179,6 +190,9 @@ export default function DashboardPage() {
               onChange={(e) => setSavingsPct(Number(e.target.value))}
               onMouseUp={handleIncomeUpdate}
               onTouchEnd={handleIncomeUpdate}
+              style={{
+                background: `linear-gradient(90deg, #7c3aed ${((savingsPct - 10) / 40) * 100}%, #e5e7eb ${((savingsPct - 10) / 40) * 100}%)`
+              }}
             />
             <div className="slider-labels">
               {sliderLabels.map((val) => (
@@ -242,7 +256,7 @@ export default function DashboardPage() {
                       </span>
                     </td>
                     <td className="amount-negative">
-                      -{formatCurrency(exp.amount, currency)}
+                      {formatCurrency(exp.amount, currency)}
                     </td>
                     <td>{new Date(exp.date).toLocaleDateString()}</td>
                     <td>

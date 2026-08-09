@@ -5,17 +5,25 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import init_db, close_db
+from app.core.scheduler import setup_scheduler, start_scheduler, stop_scheduler
 from app.api.v1.endpoints.auth import router as auth_router
 from app.api.v1.endpoints.dashboard import router as dashboard_router
 from app.api.v1.endpoints.expenses import router as expenses_router
 from app.api.v1.endpoints.profile import router as profile_router
+from app.api.v1.endpoints.budget import router as budget_router
+from app.api.v1.endpoints.analytics import router as analytics_router
+from app.api.v1.endpoints.advisor import router as advisor_router
+from app.api.v1.endpoints.reports import router as reports_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle — connect to Supabase PostgreSQL on startup, close on shutdown."""
     await init_db()
+    setup_scheduler()
+    start_scheduler()
     yield
+    stop_scheduler()
     await close_db()
 
 
@@ -48,6 +56,10 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(dashboard_router, prefix="/api/v1")
 app.include_router(expenses_router, prefix="/api/v1")
 app.include_router(profile_router, prefix="/api/v1")
+app.include_router(budget_router, prefix="/api/v1/budget", tags=["Budget"])
+app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics"])
+app.include_router(advisor_router, prefix="/api/v1/advisor", tags=["Advisor"])
+app.include_router(reports_router, prefix="/api/v1/reports", tags=["Reports"])
 
 
 @app.get("/", tags=["Health"])
