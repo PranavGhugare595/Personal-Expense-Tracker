@@ -37,7 +37,7 @@ async def send_verification_email(to_email: str, full_name: str, token: str) -> 
     message = MIMEMultipart("alternative")
     message["From"] = settings.SMTP_EMAIL
     message["To"] = to_email
-    message["Subject"] = "Verify your AI Expense Tracker account"
+    message["Subject"] = "Verify your Personal Expense Tracker account"
 
     # Plain text fallback
     plain_text = (

@@ -1,1 +1,1 @@
-# AI Expense Tracker — Backend
+# Personal Expense Tracker — Backend

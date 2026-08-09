@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="AI Expense Tracker API",
+    title="Personal Expense Tracker API",
     description="Backend API for the AI-powered personal expense tracker with ML budget forecasting.",
     version="1.0.0",
     debug=settings.DEBUG,
@@ -66,7 +66,7 @@ app.include_router(reports_router, prefix="/api/v1/reports", tags=["Reports"])
 async def root():
     """Root endpoint — health check."""
     return {
-        "app": "AI Expense Tracker API",
+        "app": "Personal Expense Tracker API",
         "status": "running",
         "version": "1.0.0",
     }

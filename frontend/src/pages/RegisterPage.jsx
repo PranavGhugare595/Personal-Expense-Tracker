@@ -122,7 +122,7 @@ export default function RegisterPage() {
           <div className="auth-logo">
             <ShieldCheck />
           </div>
-          <h1 className="auth-title">AI Expense Tracker</h1>
+          <h1 className="auth-title">Personal Expense Tracker</h1>
           <p className="auth-subtitle">Setup a new ML analytical account</p>
         </div>
 

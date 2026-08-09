@@ -13,7 +13,7 @@ class Config:
     JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "1440"))
 
     # App Config
-    APP_NAME = os.getenv("APP_NAME", "AI Expense Tracker API")
+    APP_NAME = os.getenv("APP_NAME", "Personal Expense Tracker API")
     DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 

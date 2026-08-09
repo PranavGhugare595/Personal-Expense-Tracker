@@ -78,7 +78,7 @@ export default function LoginPage() {
           <div className="auth-logo">
             <ShieldCheck />
           </div>
-          <h1 className="auth-title">AI Expense Tracker</h1>
+          <h1 className="auth-title">Personal Expense Tracker</h1>
           <p className="auth-subtitle">Sign in to access your budget forecast</p>
         </div>
 
