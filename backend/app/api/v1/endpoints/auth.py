@@ -48,7 +48,7 @@ async def register(
         full_name=user_data.full_name.strip(),
         email=user_data.email.lower().strip(),
         password_hash=hash_password(user_data.password),
-        is_verified=False,
+        is_verified=True,  # Bypassing email verification for Render deployment
         verification_token=verification_token,
     )
     db.add(new_user)
@@ -56,15 +56,16 @@ async def register(
     await db.refresh(new_user)
 
     # Send verification email in the background
-    background_tasks.add_task(
-        send_verification_email,
-        to_email=new_user.email,
-        full_name=new_user.full_name,
-        token=verification_token,
-    )
+    # Bypassed because Render Free Tier blocks SMTP Port 587
+    # background_tasks.add_task(
+    #     send_verification_email,
+    #     to_email=new_user.email,
+    #     full_name=new_user.full_name,
+    #     token=verification_token,
+    # )
 
     return {
-        "message": "Account created! Please check your email to verify your account.",
+        "message": "Account created successfully! You can now log in.",
         "success": True,
         "user_id": new_user.id,
     }

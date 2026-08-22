@@ -46,8 +46,10 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
       });
-      setSuccess('Account created! Please check your email to verify your account.');
-      setRegistered(true);
+      setSuccess('Account created successfully! Redirecting to login...');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1500);
     } catch (err) {
       console.error('Register error:', err);
       setError(
